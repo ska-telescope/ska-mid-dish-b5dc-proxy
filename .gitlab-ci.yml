@@ -1,0 +1,22 @@
+image: $SKA_K8S_TOOLS_DOCKER_BUILDER_IMAGE
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+cache:
+  paths:
+    - build
+stages:
+  - lint
+  - build
+  - test
+  - publish
+  - pages
+  - scan
+include:
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/python.gitlab-ci.yml'
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/docs.gitlab-ci.yml'
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/release.gitlab-ci.yml'
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
