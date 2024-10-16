@@ -10,6 +10,10 @@ readme = "README.md"
 name = 'skao'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 
+[[tool.poetry.source]]
+name = "PyPI-public"
+url = 'https://pypi.org/simple'
+
 [tool.poetry.dependencies]
 python = "^3.10"
 
