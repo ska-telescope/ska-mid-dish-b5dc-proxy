@@ -59,6 +59,154 @@ class B5dc(SKABaseDevice):
 
             (result_code, message) = super().do()
             return (ResultCode(result_code), message)
+        
+    # The Tango device is to incorporate a component manager that implements the control and monitoring 
+    # logic to the physical via the B5dc_device class
+    def create_component_manager(self: "B5dc") -> B5dcDeviceComponentManager:
+        # May need to pass communication_state_callback to handle connections/disconnections 
+        # to the physical device at hardware level
+        return B5dcDeviceComponentManager(
+            self.B5dc_server_ip,
+            self.B5dc_server_port,
+            self.B5dc_sensor_update_period,
+            logger=self.logger,
+            component_state_callback=self._component_state_changed,
+        )
+    # -----------
+    # Attributes
+    # -----------
+    '''
+        -> All sensor values are read only from the perspective of the client
+        On Sensor read:
+            -> (In component manager) -> Using B5dc_device_sensors_object call -> update_sensor("Register name")
+                                            -> We must update the sensor value everytime because we are not guaranteed the most uptodate 
+                                            component state from polling
+                                      -> The component state is now updated with the latest sensor value
+                                      -> Return the component state value as the value of the attribute
+    '''
+    # TODO: REMOVE THIS <- easy way to trigger connection_lost event on protocol object
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def killTransport(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager.kill_transport()
+        return 1.0
+
+
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def rfcmFrequency(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        asyncio.run(self.component_manager._sync_component_state("spi_rfcm_frequency"))
+        return self.component_manager.component_state.get("spi_rfcm_frequency")
+    
+    @attribute(
+        dtype=B5dcPllState,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def rfcmPllLock(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        asyncio.run(self.component_manager._sync_component_state("spi_rfcm_pll_lock"))
+        return self.component_manager.component_state.get("spi_rfcm_pll_lock")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def rfcmHAttenutation(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_h_attenuation")
+        return self.component_manager.component_state.get("spi_rfcm_h_attenuation")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def rfcmVAttenutation(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_v_attenuation")
+        return self.component_manager.component_state.get("spi_rfcm_v_attenuation")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def clkPhotodiodeCurrent(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_photo_diode_ain0")
+        return self.component_manager.component_state.get("spi_rfcm_photo_diode_ain0")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def hPolRfPowerIn(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_rf_in_h_ain1")
+        return self.component_manager.component_state.get("spi_rfcm_rf_in_h_ain1")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def vPolRfPowerIn(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_rf_in_v_ain2") 
+        return self.component_manager.component_state.get("spi_rfcm_rf_in_v_ain2")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def hPolRfPowerOut(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_if_out_h_ain3") 
+        return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def vPolRfPowerOut(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_if_out_v_ain4") 
+        return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def rfTemperature(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_rf_temp_ain5") 
+        return self.component_manager.component_state.get("spi_rfcm_rf_temp_ain5")
+    
+    @attribute(
+        dtype=float,
+        doc="",
+        access=AttrWriteType.READ,
+    )
+    def rfcmPsuPcbTemperature(self: "B5dc") -> float:
+        # TODO: Update the corresponding component state value
+        self.component_manager._sync_component_state("spi_rfcm_psu_pcb_temp_ain7")
+        return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7")
+    
+
 def main(args: Any = None, **kwargs: Any) -> None:
     """Launch an instance of the B5dc Tango device."""
     return run((B5dc,), args=args, **kwargs)
