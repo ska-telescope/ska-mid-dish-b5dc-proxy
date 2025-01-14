@@ -31,14 +31,16 @@ class B5dc(SKABaseDevice):
             *args: Any,
             **kwargs: Any,
         ) -> tuple[ResultCode, str]:
-            self._device._connection_state = CommunicationStatus.NOT_ESTABLISHED
+            """
+            Initialise B5dc tango device.
 
-            '''
-            It would be easier to name the attributes after the registers but naming them after the variables would make them more readable. This will however
-            complicate the component state
+            :param args: positional arguments
+            :param kwargs: keyword arguments
 
-            First pass -> have the key of the component state as the register name : have the readable variable name as the attribute name
-            '''
+            :return: A tuple containing a return code and a string
+            """
+
+            # REVIEW: Sensor names used for attrs rather than reg names?
             self._device._component_state_attr_map = {
                 "spi_rfcm_frequency" : "rfcmFrequency",
                 "spi_rfcm_pll_lock" : "rfcmPllLock",
@@ -54,17 +56,18 @@ class B5dc(SKABaseDevice):
             }
             # Configure change and archive events for all attribute in the map
             for attr in self._device._component_state_attr_map.values():
-                self._device.set_change_event(attr, True, False) # !!!!! -> The sensor values will need to be polled
+                self._device.set_change_event(attr, True, False)
                 self._device.set_archive_event(attr, True, False)
 
             (result_code, message) = super().do()
             return (ResultCode(result_code), message)
         
-    # The Tango device is to incorporate a component manager that implements the control and monitoring 
-    # logic to the physical via the B5dc_device class
     def create_component_manager(self: "B5dc") -> B5dcDeviceComponentManager:
-        # May need to pass communication_state_callback to handle connections/disconnections 
-        # to the physical device at hardware level
+        """
+        Create B5dc component manager.
+
+        :return: The B5dc component manager
+        """
         return B5dcDeviceComponentManager(
             self.B5dc_server_ip,
             self.B5dc_server_port,
@@ -74,10 +77,9 @@ class B5dc(SKABaseDevice):
         )
     
     def init_command_objects(self):
+        """Initialize the command handlers."""
         super().init_command_objects()
 
-        # Link Tango command name to component manager method
-        # These command may not be immediately actionable so implement them as LRCs
         for command_name, method_name in [
             ("SetAttenuation", "set_attenuation"),
             ("SetFrequency", "set_frequency"),
@@ -94,8 +96,8 @@ class B5dc(SKABaseDevice):
                 )
             )
 
-
     def _component_state_changed(self, *args: Any, **kwargs: Any):
+        """Callback triggered on change in component state to enable pushing of change and archive events."""
         if not hasattr(self, "_component_state_attr_map"):
             self.logger.warning("Init not completed, but state is being updated [%s]", kwargs)
             return
@@ -121,7 +123,6 @@ class B5dc(SKABaseDevice):
     # TODO: REMOVE THIS <- easy way to trigger connection_lost event on protocol object
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def killTransport(self: "B5dc") -> float:
@@ -136,7 +137,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def rfcmFrequency(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         asyncio.run(self.component_manager._sync_component_state("spi_rfcm_frequency"))
         return self.component_manager.component_state.get("spi_rfcm_frequency")
     
@@ -146,7 +146,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def rfcmPllLock(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         asyncio.run(self.component_manager._sync_component_state("spi_rfcm_pll_lock"))
         return self.component_manager.component_state.get("spi_rfcm_pll_lock")
     
@@ -156,7 +155,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def rfcmHAttenutation(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_h_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_h_attenuation")
     
@@ -166,7 +164,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def rfcmVAttenutation(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_v_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_v_attenuation")
     
@@ -176,7 +173,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def clkPhotodiodeCurrent(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_photo_diode_ain0")
         return self.component_manager.component_state.get("spi_rfcm_photo_diode_ain0")
     
@@ -186,7 +182,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def hPolRfPowerIn(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_rf_in_h_ain1")
         return self.component_manager.component_state.get("spi_rfcm_rf_in_h_ain1")
     
@@ -196,7 +191,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def vPolRfPowerIn(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_rf_in_v_ain2") 
         return self.component_manager.component_state.get("spi_rfcm_rf_in_v_ain2")
     
@@ -206,7 +200,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def hPolRfPowerOut(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_if_out_h_ain3") 
         return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3")
     
@@ -216,7 +209,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def vPolRfPowerOut(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_if_out_v_ain4") 
         return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4")
     
@@ -226,7 +218,6 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def rfTemperature(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_rf_temp_ain5") 
         return self.component_manager.component_state.get("spi_rfcm_rf_temp_ain5")
     
@@ -236,34 +227,21 @@ class B5dc(SKABaseDevice):
         access=AttrWriteType.READ,
     )
     def rfcmPsuPcbTemperature(self: "B5dc") -> float:
-        # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_psu_pcb_temp_ain7")
         return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7")
-    
-
 
     # -----------
     # Commands 
     # -----------
-    '''
-    The commands will need to implement some specific return code for device busy conditions (Seems like the B5dc_device call doesnt propagate the "busy" flags up)
-
-    Command: SetAttenuation -> This command will plug into the component managers B5dcDeviceConfigureFrequency instance and call the method "set_frequency"
-                            -> Following the setting of the attenuation value, to check that the command was completed, the component manager will have to check 
-                            whether the configured attenuation is equivalent to the set attenuation
-                            -> CM will need to wrap method call in try-catch block and catch
-                                -> B5dcDeviceAttenuationException('message')
-                            -> **The B5dc_device class already does the value set, just make sure that when you call the method it doesnt raise an exception and returns**
-    Command: SetFrequency -> This command will plug into the component managers B5dcDeviceConfigureAttenuation instance and call the method "set_frequency"
-                            -> CM will need to wrap method call in try-catch block and catch
-                                -> B5dcDeviceFrequencyException('message')
-                            -> **The B5dc_device class already does the value set check, just make sure that when you call the method it doesnt raise an exception**
-    '''
     @command(
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
     )
     def SetAttenuation(self: "B5dc", attenuation_db: int) -> DevVarLongStringArrayType:
+        """Set the attenuation on the band 5 down converter.
+
+        :param set_attenutation_db: value to set in dB
+        """
         handler = self.get_command_object("SetAttenuation")
         result_code, unique_id = handler(attenuation_db)
         return([result_code], [unique_id])
@@ -272,7 +250,12 @@ class B5dc(SKABaseDevice):
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
     )
+
     def SetFrequency(self: "B5dc", frequency: B5dcFrequency) -> DevVarLongStringArrayType:
+        """Set the frequency on the band 5 down converter.
+
+        :param frequency: frequency to set
+        """
         handler = self.get_command_object("SetFrequency")
         result_code, unique_id = handler(frequency)
         return([result_code], [unique_id])
