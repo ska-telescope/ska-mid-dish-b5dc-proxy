@@ -95,6 +95,17 @@ class B5dc(SKABaseDevice):
             )
 
 
+    def _component_state_changed(self, *args: Any, **kwargs: Any):
+        if not hasattr(self, "_component_state_attr_map"):
+            self.logger.warning("Init not completed, but state is being updated [%s]", kwargs)
+            return
+
+        for comp_state_name, comp_state_value in kwargs.items():
+            attribute_name = self._component_state_attr_map.get(comp_state_name, comp_state_name)
+            setattr(self, attribute_name, comp_state_value)
+            self.push_change_event(attribute_name, comp_state_value)
+            self.push_archive_event(attribute_name, comp_state_value)
+    
     # -----------
     # Attributes
     # -----------
