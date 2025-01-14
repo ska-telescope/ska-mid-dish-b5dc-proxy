@@ -72,6 +72,29 @@ class B5dc(SKABaseDevice):
             logger=self.logger,
             component_state_callback=self._component_state_changed,
         )
+    
+    def init_command_objects(self):
+        super().init_command_objects()
+
+        # Link Tango command name to component manager method
+        # These command may not be immediately actionable so implement them as LRCs
+        for command_name, method_name in [
+            ("SetAttenuation", "set_attenuation"),
+            ("SetFrequency", "set_frequency"),
+        ]:
+            self.register_command_object(
+                command_name,
+                SubmittedSlowCommand(
+                    command_name,
+                    self._command_tracker,
+                    self.component_manager,
+                    method_name,
+                    callback=None,
+                    logger=self.logger,
+                )
+            )
+
+
     # -----------
     # Attributes
     # -----------
@@ -205,6 +228,43 @@ class B5dc(SKABaseDevice):
         # TODO: Update the corresponding component state value
         self.component_manager._sync_component_state("spi_rfcm_psu_pcb_temp_ain7")
         return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7")
+    
+
+
+    # -----------
+    # Commands 
+    # -----------
+    '''
+    The commands will need to implement some specific return code for device busy conditions (Seems like the B5dc_device call doesnt propagate the "busy" flags up)
+
+    Command: SetAttenuation -> This command will plug into the component managers B5dcDeviceConfigureFrequency instance and call the method "set_frequency"
+                            -> Following the setting of the attenuation value, to check that the command was completed, the component manager will have to check 
+                            whether the configured attenuation is equivalent to the set attenuation
+                            -> CM will need to wrap method call in try-catch block and catch
+                                -> B5dcDeviceAttenuationException('message')
+                            -> **The B5dc_device class already does the value set, just make sure that when you call the method it doesnt raise an exception and returns**
+    Command: SetFrequency -> This command will plug into the component managers B5dcDeviceConfigureAttenuation instance and call the method "set_frequency"
+                            -> CM will need to wrap method call in try-catch block and catch
+                                -> B5dcDeviceFrequencyException('message')
+                            -> **The B5dc_device class already does the value set check, just make sure that when you call the method it doesnt raise an exception**
+    '''
+    @command(
+        dtype_in=int,
+        dtype_out="DevVarLongStringArray",
+    )
+    def SetAttenuation(self: "B5dc", attenuation_db: int) -> DevVarLongStringArrayType:
+        handler = self.get_command_object("SetAttenuation")
+        result_code, unique_id = handler(attenuation_db)
+        return([result_code], [unique_id])
+    
+    @command(
+        dtype_in=int,
+        dtype_out="DevVarLongStringArray",
+    )
+    def SetFrequency(self: "B5dc", frequency: B5dcFrequency) -> DevVarLongStringArrayType:
+        handler = self.get_command_object("SetFrequency")
+        result_code, unique_id = handler(frequency)
+        return([result_code], [unique_id])
     
 
 def main(args: Any = None, **kwargs: Any) -> None:
