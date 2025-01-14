@@ -14,7 +14,8 @@ import logging
 
 
 class B5dcDeviceComponentManager(TaskExecutorComponentManager):
-    
+    """Component manager enabling monitoring and control of the B5DC device."""
+
     def __init__(
         self: "B5dcDeviceComponentManager",
         b5dc_server_ip: str,
@@ -24,30 +25,33 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         *args: Any, 
         **kwargs: Any,     
     ) -> None:
+        """
+        Initialize B5dcDeviceComponentManager.
+
+        :param b5dc_server_ip: IP address of the B5DC server.
+        :param b5dc_server_port: Port on which to communicate with the B5DC server.
+        :param b5dc_sensor_update_period: B5DC device sensor value polling period.
+        :param args: positional arguments to pass to the parent class.
+        :param kwargs: keyword arguments to pass to the parent class.
+        """
         self.logger = logger
-
-        # TODO: Make configurable
-        self.logger.setLevel(logging.DEBUG)
-
-        self.polling_period = b5dc_sensor_update_period # We need some configurable rate of polling the sensor values
-        
+        self.logger.setLevel(logging.DEBUG) # TODO: Make configurable 
+        self.polling_period = b5dc_sensor_update_period
         self.server_addr = (b5dc_server_ip, b5dc_server_port)
 
+        # Init event loop and run coroutine to establish and maintain datagram endpoint
         self.loop = asyncio.new_event_loop()
-        # self.on_con_lost = self.loop.create_future() <- This shouldnt be global because it completes and could prevent reconnections
-        
-        # Transport and protocol objects to be assigned on creation on datagram endpoint
         self.transport = None
         self.protocol = None
         
         # Start the event loop in a separate thread 
-        self.loop_thread = threading.Thread(target=self.start_event_loop, daemon=True) 
+        self.loop_thread = threading.Thread(target=self._start_connection_event_loop, daemon=True) 
         self.loop_thread.start()
 
         # Establish server connection and keep event loop running in thread
         asyncio.run_coroutine_threadsafe(self._establish_server_connection(), self.loop)
 
-        # Initialize an instance of the B5dc interface and device classes
+        # Initialize cm instances of the B5dc interface and device classes
         self._b5dc_property_parser = B5dcPropertyParser(self.logger)
         self._b5dc_interface = B5dcInterface(
             self.logger,
@@ -60,10 +64,10 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             self._b5dc_interface
         )
 
-        # Lock will be used to update the shared sensor_map resource across async methods
+        # Lock to be used to update the shared sensor_map resource across async methods
         self.sensor_map_lock = asyncio.Lock()
 
-        # Initialize the sensor map references
+        # Update cm references to B5dc device sensor variables
         self._update_cm_sensor_references()
 
         super().__init__(
@@ -82,23 +86,23 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             spi_rfcm_psu_pcb_temp_ain7=0,
             **kwargs,
         )
-        # Following init, start up polling loop that periodically updates sensor state values of the device object
+        # Start up polling loop to periodically update all sensor state values
         self.b5dc_state_synchronization_thread = threading.Thread(
             target=self._wrap_polling_function,
             daemon=True
         )
         self.b5dc_state_synchronization_thread.start()
 
-
-    def start_event_loop(self): 
+    def _start_connection_event_loop(self) -> None:
+        """Indefinitely run event loop on which the datagram endpoint shall be created."""
         asyncio.set_event_loop(self.loop) 
         self.loop.run_forever()
 
     # Method that maintains connection to the server
     async def _establish_server_connection(self) -> None:
+        """Establish and maintain active datagram endpoint to facilitate server requests."""
         while True:
             self.server_connection_lost = self.loop.create_future()
-
             self.transport, self.protocol = await self.loop.create_datagram_endpoint(
                 lambda: B5dcProtocol(self.server_conection_lost, 
                     self.logger, 
@@ -106,13 +110,11 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 local_addr=("0.0.0.0", 0),
                 remote_addr=self.server_addr,
             )
-            
-            self.logger.info("B5DC server connection created")
             try:
-                await self.server_connection_lost
-                self.logger.warning("Connection to the underlying B5DC server lost. Attempting to reestablish one")
+                await self.server_connection_lost # <- Not completing on callback. Find out why
+                self.logger.warning("Connection to B5DC server lost. Cleaning up and attempting to re-establish one")
             finally:
-                # Clean up transport and protocol and recreate transport
+                # Clean up transport and protocol for later recreation
                 if self.transport:
                     self.transport.close()
                 self.transport = None
@@ -121,9 +123,12 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
 
     # Method to implement the period polling of the sensors to ensure
-    def _wrap_polling_function(self):
+    def _wrap_polling_function(self) -> None:
+        """Wrapper method for running of sensor polling loop."""
         asyncio.run(self._poll_sensor_attributes())
-    async def _poll_sensor_attributes(self):
+
+    async def _poll_sensor_attributes(self) -> None:
+        """Periodically poll B5dc sensor values and update component states accordingly."""
         while True:
             # This may need to be wrapped in some sort of check to make sure the 
             await self._sync_all_component_states()
@@ -131,14 +136,14 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     
     # Simulate connection_lost callback
-    def kill_transport(self):
-        # self.transport.close()
+    def kill_transport(self) -> None:
+        """Test method to easily kill the transport if needed. TO BE REMOVED."""
         self.protocol.connection_lost(None)
-
 
     # This method will be used to update the component manager internal references to the Device class sensors
     # Explore if there is a smarter way to do this, ie: update a single reference only
-    def _update_cm_sensor_references(self):
+    def _update_cm_sensor_references(self) -> None:
+        """Refresh cm references to the B5dc device sensor variables."""
         self.sensor_map = {
                 "spi_rfcm_frequency" : self._b5dc_device.sensors.rfcm_frequency,
                 "spi_rfcm_pll_lock" : self._b5dc_device.sensors.rfcm_pll_lock,
@@ -166,11 +171,11 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             return inner
     
 
-    # The function of this method is to ensure that the component state value reflect
-    # the value of the underlying sensor value. The component managers references to the device class sensors are 
-    # also refreshed
+    # The function of this method is to ensure that the component state value (linked to a register) reflect
+    # the value of the underlying sensor value.
     # @verify_transport_available
     async def _sync_component_state(self, register_name: str) -> None:
+        """Sync component state for requested register to respective B5dc device sensor."""
         # This check has be done for the "all sync" too, so maybe pop in a decorator?
         if (self.transport is not None) and (not self.transport.is_closing()): 
             try:
@@ -187,24 +192,22 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             self.logger.error("B5DC component manager transport is None, closing or closed (Single state sync)")
 
 
-
-
-
-
     # The function of the next method is to refresh all sensor values, and consequently their component states
     # If a sensor value changes the value change should be archived and a change event emitted by the device
     # @verify_transport_available
     async def _sync_all_component_states(self) -> None:
+        """Sync all component states to B5dc device sensors."""
         # This check has be done across multiple methods, so maybe pop in a decorator?
         if (self.transport is not None) and (not self.transport.is_closing()): 
             # Persist previous values of the sensor map
             init_sensor_states = self.sensor_map
 
-            # Request B5DC sensor device update all sensor values and update internal references
+            # Request B5DC sensor device update all sensor values, 
+            # following which update internal references
             try:
                 await self._b5dc_device.sensors.update_state()
-            except (B5dcMappingException, B5dcProtocolTimeout, B5dcAttenuationBusy) as ex:
-                self.logger.error(f"A failure occured while trying to sync all sensor states {ex}")
+            except KeyError:
+                self.logger.error(f"A register key not found while updating b5dc device state")
                 return None
 
             async with self.sensor_map_lock:
@@ -218,8 +221,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             self.logger.error("B5DC component manager transport is None, closing or closed (All states sync)")
 
 
-    def _update_component_state(self, *args, **kwargs):
-        # TODO: For every component update emit a change event <- Done in component_state_callback in ds
+    def _update_component_state(self, *args: Any, **kwargs: Any) -> None:
+        """Log and update new component state."""
+        self.logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(*args, **kwargs)
 
 
