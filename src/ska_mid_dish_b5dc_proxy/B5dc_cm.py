@@ -28,6 +28,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
         # TODO: Make configurable
         self.logger.setLevel(logging.DEBUG)
+
+        self.polling_period = b5dc_sensor_update_period # We need some configurable rate of polling the sensor values
         
         self.server_addr = (b5dc_server_ip, b5dc_server_port)
 
@@ -80,6 +82,14 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             spi_rfcm_psu_pcb_temp_ain7=0,
             **kwargs,
         )
+        # Following init, start up polling loop that periodically updates sensor state values of the device object
+        self.b5dc_state_synchronization_thread = threading.Thread(
+            target=self._wrap_polling_function,
+            daemon=True
+        )
+        self.b5dc_state_synchronization_thread.start()
+
+
     def start_event_loop(self): 
         asyncio.set_event_loop(self.loop) 
         self.loop.run_forever()
@@ -108,6 +118,23 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 self.transport = None
                 self.protocol = None
                 await asyncio.sleep(5)
+
+
+    # Method to implement the period polling of the sensors to ensure
+    def _wrap_polling_function(self):
+        asyncio.run(self._poll_sensor_attributes())
+    async def _poll_sensor_attributes(self):
+        while True:
+            # This may need to be wrapped in some sort of check to make sure the 
+            await self._sync_all_component_states()
+            time.sleep(self.polling_period)
+
+    
+    # Simulate connection_lost callback
+    def kill_transport(self):
+        # self.transport.close()
+        self.protocol.connection_lost(None)
+
 
     # This method will be used to update the component manager internal references to the Device class sensors
     # Explore if there is a smarter way to do this, ie: update a single reference only
