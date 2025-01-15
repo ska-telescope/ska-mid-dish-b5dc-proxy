@@ -82,9 +82,20 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
         # Lock to be used to update the shared sensor_map resource across async methods
         self.sensor_map_lock = asyncio.Lock()
-
-        # Update cm references to B5dc device sensor variables
-        self._update_cm_sensor_references()
+        
+        self.reg_to_sensor_map = {
+            "spi_rfcm_frequency": "rfcm_frequency",
+            "spi_rfcm_pll_lock": "rfcm_pll_lock",
+            "spi_rfcm_h_attenuation": "rfcm_h_attenutation_db",
+            "spi_rfcm_v_attenuation": "rfcm_v_attenutation_db",
+            "spi_rfcm_photo_diode_ain0": "clk_photodiode_current_ma",  # noqa: E501
+            "spi_rfcm_rf_in_h_ain1": "h_pol_rf_power_in_dbm",
+            "spi_rfcm_rf_in_v_ain2": "v_pol_rf_power_in_dbm",
+            "spi_rfcm_if_out_h_ain3": "h_pol_if_power_out_dbm",
+            "spi_rfcm_if_out_v_ain4": "v_pol_if_power_out_dbm",
+            "spi_rfcm_rf_temp_ain5": "rf_temperature_degc",
+            "spi_rfcm_psu_pcb_temp_ain7": "rfcm_psu_pcb_temperature_degc",  # noqa: E501
+        }
 
         super().__init__(
             logger,
@@ -103,32 +114,35 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             **kwargs,
         )
         # Start up polling loop to periodically update all sensor state values
-        self.b5dc_state_synchronization_thread = threading.Thread(
-            target=self._wrap_polling_function, daemon=True
-        )
-        self.b5dc_state_synchronization_thread.start()
+        # self.b5dc_state_synchronization_thread = threading.Thread(
+        #     target=self._wrap_polling_function, daemon=True
+        # )
+        # self.b5dc_state_synchronization_thread.start()
 
     def _start_connection_event_loop(self) -> None:
         """Assign server connection task and run event loop."""
         asyncio.set_event_loop(self.loop)
         self.loop.create_task(self._establish_server_connection())
+        self.loop.create_task(self._polling_task())
         self.loop.run_forever()
 
     # Method that maintains connection to the server
     async def _establish_server_connection(self) -> None:
         """Establish and maintain server connection."""
         while True:
-            self.server_connection_lost = self.loop.create_future()
+            server_connection_lost = self.loop.create_future()
+            print("CONNECTION TO BE ESTABLISHED")
             self.transport, self.protocol = await self.loop.create_datagram_endpoint(
                 lambda: B5dcProtocol(
-                    self.server_connection_lost, self.logger, self.server_addr
+                    server_connection_lost, self.logger, self.server_addr
                 ),
                 local_addr=("0.0.0.0", 0),
                 remote_addr=self.server_addr,
             )
-            self.connection_established.set() # Will be set on each loop, Review
+            print("CONNECTION ESTABLISHED")
+            self.connection_established.set()  # Will be set on each loop, Review
             try:
-                await self.server_connection_lost  # <- Not completing on callback
+                await server_connection_lost  # <- Not completing on callback
                 self.logger.warning(
                     "Connection to B5DC server lost.\
                     Cleaning up and attempting to re-establish one"
@@ -159,62 +173,37 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     # to the Device class sensors
     # Explore if there is a smarter way to do this, ie: update a single reference only
     # pylint: disable=line-too-long
-    def _update_cm_sensor_references(self) -> None:
-        """Refresh cm references to the B5dc device sensor variables."""
-        self.sensor_map = {
-            "spi_rfcm_frequency": self._b5dc_device.sensors.rfcm_frequency,
-            "spi_rfcm_pll_lock": self._b5dc_device.sensors.rfcm_pll_lock,
-            "spi_rfcm_h_attenuation": self._b5dc_device.sensors.rfcm_h_attenutation_db,
-            "spi_rfcm_v_attenuation": self._b5dc_device.sensors.rfcm_v_attenutation_db,
-            "spi_rfcm_photo_diode_ain0": self._b5dc_device.sensors.clk_photodiode_current_ma,  # noqa: E501
-            "spi_rfcm_rf_in_h_ain1": self._b5dc_device.sensors.h_pol_rf_power_in_dbm,
-            "spi_rfcm_rf_in_v_ain2": self._b5dc_device.sensors.v_pol_rf_power_in_dbm,
-            "spi_rfcm_if_out_h_ain3": self._b5dc_device.sensors.h_pol_if_power_out_dbm,
-            "spi_rfcm_if_out_v_ain4": self._b5dc_device.sensors.v_pol_if_power_out_dbm,
-            "spi_rfcm_rf_temp_ain5": self._b5dc_device.sensors.rf_temperature_degc,
-            "spi_rfcm_psu_pcb_temp_ain7": self._b5dc_device.sensors.rfcm_psu_pcb_temperature_degc,  # noqa: E501
-        }
+    # def _update_cm_sensor_references(self) -> None:
+    #     """Refresh cm references to the B5dc device sensor variables."""
+    #     self.sensor_map = {
+    #         "spi_rfcm_frequency": self._b5dc_device.sensors.rfcm_frequency,
+    #         "spi_rfcm_pll_lock": self._b5dc_device.sensors.rfcm_pll_lock,
+    #         "spi_rfcm_h_attenuation": self._b5dc_device.sensors.rfcm_h_attenutation_db,
+    #         "spi_rfcm_v_attenuation": self._b5dc_device.sensors.rfcm_v_attenutation_db,
+    #         "spi_rfcm_photo_diode_ain0": self._b5dc_device.sensors.clk_photodiode_current_ma,  # noqa: E501
+    #         "spi_rfcm_rf_in_h_ain1": self._b5dc_device.sensors.h_pol_rf_power_in_dbm,
+    #         "spi_rfcm_rf_in_v_ain2": self._b5dc_device.sensors.v_pol_rf_power_in_dbm,
+    #         "spi_rfcm_if_out_h_ain3": self._b5dc_device.sensors.h_pol_if_power_out_dbm,
+    #         "spi_rfcm_if_out_v_ain4": self._b5dc_device.sensors.v_pol_if_power_out_dbm,
+    #         "spi_rfcm_rf_temp_ain5": self._b5dc_device.sensors.rf_temperature_degc,
+    #         "spi_rfcm_psu_pcb_temp_ain7": self._b5dc_device.sensors.rfcm_psu_pcb_temperature_degc,  # noqa: E501
+    #     }
 
-    # This method will make sure that the transport exists and is
-    # not closing before attempting to publish a request to the b5dc server
-    def verify_transport_available(self, func):
-        """Verify availability of transport before server communication attempt."""
-
-        @wraps(func)
-        async def inner(self, *args: Any, **kwargs: Any) -> Any:
-            if (self.transport is not None) and (not self.transport.is_closing()):
-                result = await func(*args, **kwargs)
-                return result
-            else:
-                self.logger.warning(
-                    "B5DC component manager transport is None, closing or closed"
-                )
-            return inner
-
-    # The function of this method is to ensure that the component state value
-    # (linked to a register) reflect the value of the underlying sensor value.
-    # @verify_transport_available
     async def _sync_component_state(self, register_name: str) -> None:
         """Sync component state to respective B5dc device sensor."""
-        # This check has be done for the "all sync" too, so maybe pop in a decorator?
-        # if (self.transport is not None) and (not self.transport.is_closing()):
         if self.protocol.connection_established:
+            init_var_value = getattr(self._b5dc_device.sensors, self.reg_to_sensor_map[register_name])
             try:
                 await self._b5dc_device.sensors.update_sensor(register_name)
-            except (
-                B5dcMappingException,
-                B5dcProtocolTimeout,
-                B5dcAttenuationBusy,
-            ) as ex:
-                self.logger.error(f"Failed to sync component state: {ex}")
-                return None
+            except KeyError:
+                print(f"Failure on request to update register value: {register_name}")
 
-            async with self.sensor_map_lock:
-                self._update_cm_sensor_references()
+            updated_var_value = getattr(self._b5dc_device.sensors, self.reg_to_sensor_map[register_name])
 
-            self._update_component_state(
-                **{register_name: self.sensor_map[register_name]}
-            )
+            if init_var_value != updated_var_value:
+                self._update_component_state(
+                    **{register_name: getattr(self._b5dc_device.sensors, self.reg_to_sensor_map[register_name])}
+                )
         else:
             self.logger.warning(
                 "B5DC component manager transport is\
@@ -227,31 +216,45 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     # @verify_transport_available
     async def _sync_all_component_states(self) -> None:
         """Sync all component states to B5dc device sensors."""
-        if self.protocol.connection_established:
-            init_sensor_states = self.sensor_map
+        for register in self.reg_to_sensor_map.keys():
+            self._sync_component_state(register)
 
-            try:
-                await self._b5dc_device.sensors.update_state()
-            except KeyError:
-                self.logger.error(
-                    "A register key was not found while updating b5dc device state"
-                )
-                return None
+    async def _polling_task(self) -> None:
+        if self.connection_established.isSet():
+            while True:
+                    self._sync_all_component_states()
+                    asyncio.sleep(self.polling_period)
 
-            async with self.sensor_map_lock:
-                self._update_cm_sensor_references()
 
-            # Compare prior sensor states and update component states if changed
-            for register in self.sensor_map:
-                if self.sensor_map[register] != init_sensor_states[register]:
-                    self._update_component_state(
-                        **{register: self.sensor_map[register]}
-                    )
-        else:
-            self.logger.warning(
-                "B5DC component manager transport is\
-                None, closing or closed (All states sync)"
-            )
+        # if self.protocol.connection_established:
+        #     async with self.sensor_map_lock:
+        #         self._update_cm_sensor_references()
+
+        #     init_sensor_states = self.sensor_map.copy()
+        #     print("Init sensor states: " + str(init_sensor_states))
+
+        #     try:
+        #         await self._b5dc_device.sensors.update_state()
+        #     except KeyError:
+        #         self.logger.error(
+        #             "A register key was not found while updating b5dc device state"
+        #         )
+        #         return None
+
+        #     async with self.sensor_map_lock:
+        #         self._update_cm_sensor_references()
+
+        #     # Compare prior sensor states and update component states if changed
+        #     for register in self.sensor_map:
+        #         if self.sensor_map[register] != init_sensor_states[register]:
+        #             self._update_component_state(
+        #                 **{register: self.sensor_map[register]}
+        #             )
+        # else:
+        #     self.logger.warning(
+        #         "B5DC component manager transport is\
+        #         None, closing or closed (All states sync)"
+        #     )
 
     def _update_component_state(self, *args: Any, **kwargs: Any) -> None:
         """Log and update new component state."""
