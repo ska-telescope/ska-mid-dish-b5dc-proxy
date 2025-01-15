@@ -1,5 +1,7 @@
 """Specialization of B5dc Device functionality."""
 
+# pylint: disable=abstract-method,too-many-instance-attributes
+
 import asyncio
 import logging
 import threading
@@ -110,17 +112,17 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     async def _establish_server_connection(self) -> None:
         """Establish and maintain server connection."""
         while True:
-            self.server_connection_lost = self.loop.create_future()
+            server_connection_lost = self.loop.create_future()
             self.transport, self.protocol = await self.loop.create_datagram_endpoint(
                 lambda: B5dcProtocol(
-                    self.server_connection_lost, self.logger, self.server_addr
+                    server_connection_lost, self.logger, self.server_addr
                 ),
                 local_addr=("0.0.0.0", 0),
                 remote_addr=self.server_addr,
             )
             self.connection_established.set()
             try:
-                await self.server_connection_lost
+                await server_connection_lost
                 self.logger.warning(
                     "Connection to B5DC server lost.\
                     Cleaning up and attempting to re-establish one"
@@ -167,7 +169,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     async def _periodically_poll_sensor_values(self) -> None:
         """Run indefinite loop to poll B5dc sensor values."""
-        if self.connection_established.isSet():
+        if self.connection_established.is_set():
             while True:
                 await self._sync_all_component_states()
                 time.sleep(self.polling_period)

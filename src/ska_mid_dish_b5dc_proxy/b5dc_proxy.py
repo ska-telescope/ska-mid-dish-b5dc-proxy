@@ -61,7 +61,7 @@ class B5dcProxy(SKABaseDevice):
                 self._device.set_change_event(attr, True, False)
                 self._device.set_archive_event(attr, True, False)
 
-            (result_code, message) = super().do()
+            (result_code, message) = super().do()  # type: ignore
             return (ResultCode(result_code), message)
 
     def create_component_manager(self: "B5dcProxy") -> B5dcDeviceComponentManager:
