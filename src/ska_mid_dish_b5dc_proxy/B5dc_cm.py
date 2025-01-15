@@ -4,23 +4,15 @@ import asyncio
 import logging
 import threading
 import time
-from functools import wraps
 from typing import Any
 
 from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDevice
-from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import (
-    B5dcAttenuationBusy,
-    B5dcMappingException,
-    B5dcPllState,
-)
+from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcPllState
 from ska_mid_dish_dcp_lib.interface.b5dc_interface import (
     B5dcInterface,
     B5dcPropertyParser,
 )
-from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import (
-    B5dcProtocol,
-    B5dcProtocolTimeout,
-)
+from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol
 from ska_tango_base.executor import TaskExecutorComponentManager
 
 
@@ -64,7 +56,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         # Establish server connection and keep event loop running in thread
         self.connection_established = threading.Event()
 
-        # Initialize cm instances of the B5dc interface and device classes, 
+        # Initialize cm instances of the B5dc interface and device classes,
         # but wait for protocol to be established
         self.connection_established.wait()
         self._b5dc_property_parser = B5dcPropertyParser(self.logger)
@@ -142,16 +134,25 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     async def _sync_component_state(self, register_name: str) -> None:
         """Sync component state to respective B5dc device sensor."""
         if self.protocol.connection_established:
-            init_sensor_val = getattr(self._b5dc_device.sensors, self.reg_to_sensor_map[register_name])
+            init_sensor_val = getattr(
+                self._b5dc_device.sensors, self.reg_to_sensor_map[register_name]
+            )
             try:
                 await self._b5dc_device.sensors.update_sensor(register_name)
             except KeyError:
                 print(f"Failure on request to update register value: {register_name}")
-            updated_sensor_val = getattr(self._b5dc_device.sensors, self.reg_to_sensor_map[register_name])
+            updated_sensor_val = getattr(
+                self._b5dc_device.sensors, self.reg_to_sensor_map[register_name]
+            )
 
             if init_sensor_val != updated_sensor_val:
                 self._update_component_state(
-                    **{register_name: getattr(self._b5dc_device.sensors, self.reg_to_sensor_map[register_name])}
+                    **{
+                        register_name: getattr(
+                            self._b5dc_device.sensors,
+                            self.reg_to_sensor_map[register_name],
+                        )
+                    }
                 )
         else:
             self.logger.warning(
@@ -161,15 +162,15 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     async def _sync_all_component_states(self) -> None:
         """Sync all component states to B5dc device sensors."""
-        for register in self.reg_to_sensor_map.keys():
+        for register in self.reg_to_sensor_map:
             await self._sync_component_state(register)
 
     async def _periodically_poll_sensor_values(self) -> None:
         """Run indefinite loop to poll B5dc sensor values."""
         if self.connection_established.isSet():
             while True:
-                    await self._sync_all_component_states()
-                    time.sleep(self.polling_period)
+                await self._sync_all_component_states()
+                time.sleep(self.polling_period)
 
     def _update_component_state(self, *args: Any, **kwargs: Any) -> None:
         """Log and update new component state."""

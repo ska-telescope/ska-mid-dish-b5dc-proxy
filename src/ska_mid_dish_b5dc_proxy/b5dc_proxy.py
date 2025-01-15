@@ -118,16 +118,6 @@ class B5dcProxy(SKABaseDevice):
     # -----------
     # Attributes
     # -----------
-    # TODO: REMOVE <- easy way to trigger connection_lost event on protocol object
-    @attribute(
-        dtype=float,
-        access=AttrWriteType.READ,
-    )
-    def killTransport(self: "B5dcProxy") -> float:
-        # TODO: Update the corresponding component state value
-        self.component_manager.kill_transport()
-        return 1.0
-
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
@@ -148,7 +138,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def rfcmHAttenutation(self: "B5dcProxy") -> float:
@@ -160,7 +149,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def rfcmVAttenutation(self: "B5dcProxy") -> float:
@@ -172,7 +160,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def clkPhotodiodeCurrent(self: "B5dcProxy") -> float:
@@ -184,7 +171,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def hPolRfPowerIn(self: "B5dcProxy") -> float:
@@ -196,7 +182,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def vPolRfPowerIn(self: "B5dcProxy") -> float:
@@ -208,7 +193,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def hPolRfPowerOut(self: "B5dcProxy") -> float:
@@ -220,7 +204,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def vPolRfPowerOut(self: "B5dcProxy") -> float:
@@ -232,7 +215,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def rfTemperature(self: "B5dcProxy") -> float:
@@ -244,7 +226,6 @@ class B5dcProxy(SKABaseDevice):
 
     @attribute(
         dtype=float,
-        doc="",
         access=AttrWriteType.READ,
     )
     def rfcmPsuPcbTemperature(self: "B5dcProxy") -> float:
