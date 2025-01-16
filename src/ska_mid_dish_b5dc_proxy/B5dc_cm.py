@@ -136,26 +136,22 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     async def _sync_component_state(self, register_name: str) -> None:
         """Sync component state to respective B5dc device sensor."""
         if self._protocol.connection_established:
-            init_sensor_val = getattr(
-                self._b5dc_device.sensors, self._reg_to_sensor_map[register_name]
-            )
             try:
                 await self._b5dc_device.sensors.update_sensor(register_name)
             except KeyError:
-                self.logger.error(f"Failure on request to update register value: {register_name}")
-            updated_sensor_val = getattr(
-                self._b5dc_device.sensors, self._reg_to_sensor_map[register_name]
+                self.logger.error(
+                    f"Failure on request to update register value: {register_name}"
+                )
+
+            self._update_component_state(
+                **{
+                    register_name: getattr(
+                        self._b5dc_device.sensors,
+                        self._reg_to_sensor_map[register_name],
+                    )
+                }
             )
 
-            if init_sensor_val != updated_sensor_val:
-                self._update_component_state(
-                    **{
-                        register_name: getattr(
-                            self._b5dc_device.sensors,
-                            self._reg_to_sensor_map[register_name],
-                        )
-                    }
-                )
         else:
             self._logger.warning(
                 "B5DC component manager transport is\
