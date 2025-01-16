@@ -39,15 +39,15 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         :param args: positional arguments to pass to the parent class.
         :param kwargs: keyword arguments to pass to the parent class.
         """
-        self.logger = logger
-        self.logger.setLevel(logging.DEBUG)  # TODO: Make configurable
-        self.polling_period = b5dc_sensor_update_period
-        self.server_addr = (b5dc_server_ip, b5dc_server_port)
+        self._logger = logger
+        self._logger.setLevel(logging.DEBUG)  # TODO: Make configurable
+        self._polling_period = b5dc_sensor_update_period
+        self._server_addr = (b5dc_server_ip, b5dc_server_port)
 
         # Init event loop and run coroutine to establish and maintain datagram endpoint
         self.loop = asyncio.new_event_loop()
-        self.transport = None
-        self.protocol = None
+        self._transport = None
+        self._protocol = None
 
         # Start the event loop in a separate thread
         self.loop_thread = threading.Thread(
@@ -56,21 +56,21 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self.loop_thread.start()
 
         # Establish server connection and keep event loop running in thread
-        self.connection_established = threading.Event()
+        self._connection_established = threading.Event()
 
         # Initialize cm instances of the B5dc interface and device classes,
         # but wait for protocol to be established
-        self.connection_established.wait()
-        self._b5dc_property_parser = B5dcPropertyParser(self.logger)
+        self._connection_established.wait()
+        self._b5dc_property_parser = B5dcPropertyParser(self._logger)
         self._b5dc_interface = B5dcInterface(
-            self.logger,
+            self._logger,
             self._b5dc_property_parser,
-            get_method=self.protocol.sync_read_register,
-            set_method=self.protocol.sync_write_register,
+            get_method=self._protocol.sync_read_register,
+            set_method=self._protocol.sync_write_register,
         )
-        self._b5dc_device = B5dcDevice(self.logger, self._b5dc_interface)
+        self._b5dc_device = B5dcDevice(self._logger, self._b5dc_interface)
 
-        self.reg_to_sensor_map = {
+        self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
             "spi_rfcm_pll_lock": "rfcm_pll_lock",
             "spi_rfcm_h_attenuation": "rfcm_h_attenutation_db",
@@ -87,17 +87,17 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         super().__init__(
             logger,
             *args,
-            spi_rfcm_frequency=0,
+            spi_rfcm_frequency=0.0,
             spi_rfcm_pll_lock=B5dcPllState.NOT_LOCKED,
-            spi_rfcm_h_attenuation=0,
-            spi_rfcm_v_attenuation=0,
-            spi_rfcm_photo_diode_ain0=0,
-            spi_rfcm_rf_in_h_ain1=0,
-            spi_rfcm_rf_in_v_ain2=0,
-            spi_rfcm_if_out_h_ain3=0,
-            spi_rfcm_if_out_v_ain4=0,
-            spi_rfcm_rf_temp_ain5=0,
-            spi_rfcm_psu_pcb_temp_ain7=0,
+            spi_rfcm_h_attenuation=0.0,
+            spi_rfcm_v_attenuation=0.0,
+            spi_rfcm_photo_diode_ain0=0.0,
+            spi_rfcm_rf_in_h_ain1=0.0,
+            spi_rfcm_rf_in_v_ain2=0.0,
+            spi_rfcm_if_out_h_ain3=0.0,
+            spi_rfcm_if_out_v_ain4=0.0,
+            spi_rfcm_rf_temp_ain5=0.0,
+            spi_rfcm_psu_pcb_temp_ain7=0.0,
             **kwargs,
         )
         asyncio.run(self._sync_all_component_states())
@@ -113,38 +113,38 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         """Establish and maintain server connection."""
         while True:
             server_connection_lost = self.loop.create_future()
-            self.transport, self.protocol = await self.loop.create_datagram_endpoint(
+            self._transport, self._protocol = await self.loop.create_datagram_endpoint(
                 lambda: B5dcProtocol(
-                    server_connection_lost, self.logger, self.server_addr
+                    server_connection_lost, self._logger, self._server_addr
                 ),
                 local_addr=("0.0.0.0", 0),
-                remote_addr=self.server_addr,
+                remote_addr=self._server_addr,
             )
-            self.connection_established.set()
+            self._connection_established.set()
             try:
                 await server_connection_lost
-                self.logger.warning(
+                self._logger.warning(
                     "Connection to B5DC server lost.\
                     Cleaning up and attempting to re-establish one"
                 )
             finally:
                 # Clean up transport for later recreation
-                if self.transport:
-                    self.transport.close()
+                if self._transport:
+                    self._transport.close()
                 await asyncio.sleep(5)
 
     async def _sync_component_state(self, register_name: str) -> None:
         """Sync component state to respective B5dc device sensor."""
-        if self.protocol.connection_established:
+        if self._protocol.connection_established:
             init_sensor_val = getattr(
-                self._b5dc_device.sensors, self.reg_to_sensor_map[register_name]
+                self._b5dc_device.sensors, self._reg_to_sensor_map[register_name]
             )
             try:
                 await self._b5dc_device.sensors.update_sensor(register_name)
             except KeyError:
-                print(f"Failure on request to update register value: {register_name}")
+                self.logger.error(f"Failure on request to update register value: {register_name}")
             updated_sensor_val = getattr(
-                self._b5dc_device.sensors, self.reg_to_sensor_map[register_name]
+                self._b5dc_device.sensors, self._reg_to_sensor_map[register_name]
             )
 
             if init_sensor_val != updated_sensor_val:
@@ -152,29 +152,29 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                     **{
                         register_name: getattr(
                             self._b5dc_device.sensors,
-                            self.reg_to_sensor_map[register_name],
+                            self._reg_to_sensor_map[register_name],
                         )
                     }
                 )
         else:
-            self.logger.warning(
+            self._logger.warning(
                 "B5DC component manager transport is\
                 None, closing or closed (Single state sync)"
             )
 
     async def _sync_all_component_states(self) -> None:
         """Sync all component states to B5dc device sensors."""
-        for register in self.reg_to_sensor_map:
+        for register in self._reg_to_sensor_map:
             await self._sync_component_state(register)
 
     async def _periodically_poll_sensor_values(self) -> None:
         """Run indefinite loop to poll B5dc sensor values."""
-        if self.connection_established.is_set():
+        if self._connection_established.is_set():
             while True:
                 await self._sync_all_component_states()
-                time.sleep(self.polling_period)
+                time.sleep(self._polling_period)
 
     def _update_component_state(self, *args: Any, **kwargs: Any) -> None:
         """Log and update new component state."""
-        self.logger.debug("Updating B5dc component state with [%s]", kwargs)
+        self._logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(*args, **kwargs)
