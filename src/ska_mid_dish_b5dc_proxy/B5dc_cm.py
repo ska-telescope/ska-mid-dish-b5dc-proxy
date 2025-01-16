@@ -100,17 +100,29 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             spi_rfcm_psu_pcb_temp_ain7=0.0,
             **kwargs,
         )
-        asyncio.run(self._sync_all_component_states())
-        self.loop.create_task(self._periodically_poll_sensor_values())
+
+        # Start the server connection event loop in a separate thread
+        self.loop_thread = threading.Thread(
+            target=self._start_connection_event_loop, daemon=True
+        )
+        self.loop_thread.start()
+
+        # Flag to indicate server connection established and component states
+        # synchronized to b5dc device sensors
+        self._con_established_and_synced = threading.Event()
+
+        # Lock to prevent contention on request to update B5dc device sensors
+        self._sensor_update_lock = asyncio.Lock()
 
     def _start_connection_event_loop(self) -> None:
         """Assign server connection task and run event loop."""
-        asyncio.set_event_loop(self.loop)
+        self.loop = asyncio.new_event_loop()
         self.loop.create_task(self._establish_server_connection())
         self.loop.run_forever()
 
+    # pylint: disable=attribute-defined-outside-init
     async def _establish_server_connection(self) -> None:
-        """Establish and maintain server connection."""
+        """Establish and maintain server connection within event loop."""
         while True:
             server_connection_lost = self.loop.create_future()
             self._transport, self._protocol = await self.loop.create_datagram_endpoint(
@@ -120,7 +132,24 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 local_addr=("0.0.0.0", 0),
                 remote_addr=self._server_addr,
             )
-            self._connection_established.set()
+
+            self._b5dc_property_parser = B5dcPropertyParser(self._logger)
+            self._b5dc_interface = B5dcInterface(
+                self._logger,
+                self._b5dc_property_parser,
+                get_method=self._protocol.sync_read_register,
+                set_method=self._protocol.sync_write_register,
+            )
+            self._b5dc_device = B5dcDevice(self._logger, self._b5dc_interface)
+
+            # Sync component state to sensor values on connection start before
+            # setting polling loop
+            await self._update_all_registers()
+
+            self._con_established_and_synced.set()
+
+            self.loop.create_task(self._periodically_poll_sensor_values())
+
             try:
                 await server_connection_lost
                 self._logger.warning(
