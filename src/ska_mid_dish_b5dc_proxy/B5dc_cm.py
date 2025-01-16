@@ -167,9 +167,45 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         async with self._sensor_update_lock:
             await self._b5dc_device.sensors.update_sensor(register_name)
 
+    # Update a single sensor value, and the component state from outside the event loop
+    # Was called: _sync_component_state
+    def sync_register_outside_event_loop(self, register_name: str) -> None:
+        """Update singular B5dc device sensor and sync component state."""
+        if self._con_established_and_synced.is_set():
+            try:
+                asyncio.run(self._update_sensor_with_lock(register_name))
+            except KeyError:
+                self._logger.error(
+                    f"Error on request to update unknown register: {register_name}"
+                )
+                return None
+            except RuntimeError as ex:
+                self.logger.error(
+                    f"Error while requesting update to register {register_name}: {ex}"
+                )
+                return None
+
+            self._update_component_state(
+                **{
+                    register_name: getattr(
+                        self._b5dc_device.sensors,
+                        self._reg_to_sensor_map[register_name],
+                    )
+                }
+            )
+        else:
+            self._logger.warning(
+                "Connection not yet established or component state \
+                not yet synchronized to b5dc device"
+            )
+        return None
+
+    # Update a single sensor value, and the component state from inside the event loop
+    async def _sync_register_within_event_loop(self, register_name: str) -> None:
+        """Update singular B5dc device sensor and sync component state."""
         if self._protocol.connection_established:
             try:
-                await self._b5dc_device.sensors.update_sensor(register_name)
+                await self._update_sensor_with_lock(register_name)
             except KeyError:
                 self.logger.error(
                     f"Failure on request to update register value: {register_name}"
@@ -183,18 +219,10 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                     )
                 }
             )
-
         else:
-            self._logger.warning(
-                "B5DC component manager transport is\
-                None, closing or closed (Single state sync)"
-            )
+            self._logger.warning("Connection not yet established")
 
-    async def _sync_all_component_states(self) -> None:
-        """Sync all component states to B5dc device sensors."""
-        for register in self._reg_to_sensor_map:
-            await self._sync_component_state(register)
-
+    # Polling loop task to be added to event loop in thread
     async def _periodically_poll_sensor_values(self) -> None:
         """Run indefinite loop to poll B5dc sensor values."""
         if self._connection_established.is_set():
