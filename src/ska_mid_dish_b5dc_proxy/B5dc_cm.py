@@ -162,8 +162,11 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                     self._transport.close()
                 await asyncio.sleep(5)
 
-    async def _sync_component_state(self, register_name: str) -> None:
-        """Sync component state to respective B5dc device sensor."""
+    async def _update_sensor_with_lock(self, register_name: str) -> None:
+        """Acquire the sensor map lock and request b5dc device sensor update."""
+        async with self._sensor_update_lock:
+            await self._b5dc_device.sensors.update_sensor(register_name)
+
         if self._protocol.connection_established:
             try:
                 await self._b5dc_device.sensors.update_sensor(register_name)
