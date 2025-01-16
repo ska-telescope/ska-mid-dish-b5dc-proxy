@@ -2,16 +2,16 @@
 
 # pylint: disable=protected-access,invalid-name
 
-import asyncio
 from typing import Any, List, Optional, Tuple
 
-from b5dc_cm import B5dcDeviceComponentManager
 from ska_control_model import ResultCode
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType
 from tango.server import attribute, command, run
+
+from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
@@ -124,7 +124,7 @@ class B5dcProxy(SKABaseDevice):
     )
     def rfcmFrequency(self: "B5dcProxy") -> float:
         """Reflect the PLL output frequency."""
-        asyncio.run(self.component_manager._sync_component_state("spi_rfcm_frequency"))
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_frequency")
         return self.component_manager.component_state.get("spi_rfcm_frequency")
 
     @attribute(
@@ -133,7 +133,7 @@ class B5dcProxy(SKABaseDevice):
     )
     def rfcmPllLock(self: "B5dcProxy") -> B5dcPllState:
         """To be filled."""
-        asyncio.run(self.component_manager._sync_component_state("spi_rfcm_pll_lock"))
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_pll_lock")
         return self.component_manager.component_state.get("spi_rfcm_pll_lock")
 
     @attribute(
@@ -142,8 +142,8 @@ class B5dcProxy(SKABaseDevice):
     )
     def rfcmHAttenutation(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_h_attenuation")
+        self.component_manager.sync_register_outside_event_loop(
+            "spi_rfcm_h_attenuation"
         )
         return self.component_manager.component_state.get("spi_rfcm_h_attenuation")
 
@@ -153,8 +153,8 @@ class B5dcProxy(SKABaseDevice):
     )
     def rfcmVAttenutation(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_v_attenuation")
+        self.component_manager.sync_register_outside_event_loop(
+            "spi_rfcm_v_attenuation"
         )
         return self.component_manager.component_state.get("spi_rfcm_v_attenuation")
 
@@ -164,8 +164,8 @@ class B5dcProxy(SKABaseDevice):
     )
     def clkPhotodiodeCurrent(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_photo_diode_ain0")
+        self.component_manager.sync_register_outside_event_loop(
+            "spi_rfcm_photo_diode_ain0"
         )
         return self.component_manager.component_state.get("spi_rfcm_photo_diode_ain0")
 
@@ -175,9 +175,7 @@ class B5dcProxy(SKABaseDevice):
     )
     def hPolRfPowerIn(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_rf_in_h_ain1")
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_in_h_ain1")
         return self.component_manager.component_state.get("spi_rfcm_rf_in_h_ain1")
 
     @attribute(
@@ -186,9 +184,7 @@ class B5dcProxy(SKABaseDevice):
     )
     def vPolRfPowerIn(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_rf_in_v_ain2")
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_in_v_ain2")
         return self.component_manager.component_state.get("spi_rfcm_rf_in_v_ain2")
 
     @attribute(
@@ -197,8 +193,8 @@ class B5dcProxy(SKABaseDevice):
     )
     def hPolRfPowerOut(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_if_out_h_ain3")
+        self.component_manager.sync_register_outside_event_loop(
+            "spi_rfcm_if_out_h_ain3"
         )
         return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3")
 
@@ -208,8 +204,8 @@ class B5dcProxy(SKABaseDevice):
     )
     def vPolRfPowerOut(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_if_out_v_ain4")
+        self.component_manager.sync_register_outside_event_loop(
+            "spi_rfcm_if_out_v_ain4"
         )
         return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4")
 
@@ -219,9 +215,7 @@ class B5dcProxy(SKABaseDevice):
     )
     def rfTemperature(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_rf_temp_ain5")
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_temp_ain5")
         return self.component_manager.component_state.get("spi_rfcm_rf_temp_ain5")
 
     @attribute(
@@ -230,8 +224,8 @@ class B5dcProxy(SKABaseDevice):
     )
     def rfcmPsuPcbTemperature(self: "B5dcProxy") -> float:
         """To be filled."""
-        asyncio.run(
-            self.component_manager._sync_component_state("spi_rfcm_psu_pcb_temp_ain7")
+        self.component_manager.sync_register_outside_event_loop(
+            "spi_rfcm_psu_pcb_temp_ain7"
         )
         return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7")
 
