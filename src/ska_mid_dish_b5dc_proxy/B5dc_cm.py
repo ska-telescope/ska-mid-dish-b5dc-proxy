@@ -5,7 +5,6 @@
 import asyncio
 import logging
 import threading
-import time
 from typing import Any
 
 from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDevice
@@ -47,27 +46,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self.loop = None
         self._transport = None
         self._protocol = None
-
-        # Start the event loop in a separate thread
-        self.loop_thread = threading.Thread(
-            target=self._start_connection_event_loop, daemon=True
-        )
-        self.loop_thread.start()
-
-        # Establish server connection and keep event loop running in thread
-        self._connection_established = threading.Event()
-
-        # Initialize cm instances of the B5dc interface and device classes,
-        # but wait for protocol to be established
-        self._connection_established.wait()
-        self._b5dc_property_parser = B5dcPropertyParser(self._logger)
-        self._b5dc_interface = B5dcInterface(
-            self._logger,
-            self._b5dc_property_parser,
-            get_method=self._protocol.sync_read_register,
-            set_method=self._protocol.sync_write_register,
-        )
-        self._b5dc_device = B5dcDevice(self._logger, self._b5dc_interface)
 
         self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
