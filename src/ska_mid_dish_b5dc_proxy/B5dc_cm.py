@@ -224,11 +224,20 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     # Polling loop task to be added to event loop in thread
     async def _periodically_poll_sensor_values(self) -> None:
-        """Run indefinite loop to poll B5dc sensor values."""
-        if self._connection_established.is_set():
-            while True:
-                await self._sync_all_component_states()
-                time.sleep(self._polling_period)
+        """Run indefinite loop to periodically update all sensors values."""
+        # Wait before running the polling loop for the first time as component
+        # states are already synchronised on connection
+        await asyncio.sleep(self._polling_period)
+        while True:
+            if self._con_established_and_synced.is_set():
+                await self._update_all_registers()
+                await asyncio.sleep(self._polling_period)
+
+    # Was called: _sync_all_component_states
+    async def _update_all_registers(self) -> None:
+        """Update all B5dc device sensors and sync component state."""
+        for register in self._reg_to_sensor_map:
+            await self._sync_register_within_event_loop(register)
 
     def _update_component_state(self, *args: Any, **kwargs: Any) -> None:
         """Log and update new component state."""
