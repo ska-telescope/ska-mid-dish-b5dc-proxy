@@ -153,8 +153,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             try:
                 await server_connection_lost
                 self._logger.warning(
-                    "Connection to B5DC server lost.\
-                    Cleaning up and attempting to re-establish one"
+                    "Connection to B5DC server lost. \
+                    Cleaning up and attempting to re-establish"
                 )
             finally:
                 # Clean up transport for later recreation
