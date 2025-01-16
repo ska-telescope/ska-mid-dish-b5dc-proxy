@@ -11,7 +11,7 @@ from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType
 from tango.server import attribute, command, run
 
-from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
+from ska_mid_dish_b5dc_proxy.temp_b5dc_cm import B5dcDeviceComponentManager
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
