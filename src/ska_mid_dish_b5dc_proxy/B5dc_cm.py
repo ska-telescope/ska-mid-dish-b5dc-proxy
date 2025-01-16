@@ -40,12 +40,11 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         :param kwargs: keyword arguments to pass to the parent class.
         """
         self._logger = logger
-        self._logger.setLevel(logging.DEBUG)  # TODO: Make configurable
+        self._logger.setLevel(logging.DEBUG)
         self._polling_period = b5dc_sensor_update_period
         self._server_addr = (b5dc_server_ip, b5dc_server_port)
 
-        # Init event loop and run coroutine to establish and maintain datagram endpoint
-        self.loop = asyncio.new_event_loop()
+        self.loop = None
         self._transport = None
         self._protocol = None
 
