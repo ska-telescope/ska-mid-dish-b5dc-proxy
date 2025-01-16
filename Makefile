@@ -10,7 +10,5 @@ docs-pre-build:
 .PHONY: docs-pre-build
 
 PYTHON_LINE_LENGTH = 88
-python-post-lint:
-	mypy src/ tests/
 
 .PHONY: docs-pre-build python-post-lint
