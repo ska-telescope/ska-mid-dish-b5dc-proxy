@@ -45,6 +45,6 @@ ENV PYTHONPATH=${PYTHONPATH}:/app/
 # Metadata labels
 LABEL int.skao.image.team="TEAM KAROO" \
       int.skao.image.authors="samuel.twum@skao.int" \
-      int.skao.image.url="https://gitlab.com/ska-telescope/ska-mid-dish-ds-manager" \
-      description="Tango device which exposes a tango interface to control and monitor the Dish Structure Controller" \
+      int.skao.image.url="https://gitlab.com/ska-telescope/ska-mid-dish-b5dc-proxy" \
+      description="Tango device which exposes a tango interface to control and monitor the Band 5 Downconverter device" \
       license="BSD-3-Clause"
