@@ -8,7 +8,7 @@ from ska_control_model import ResultCode
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import SubmittedSlowCommand
-from tango import AttrWriteType
+from tango import AttrWriteType, is_omni_thread
 from tango.server import attribute, command, run
 
 from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
@@ -112,8 +112,13 @@ class B5dcProxy(SKABaseDevice):
                 comp_state_name, comp_state_name
             )
             setattr(self, attribute_name, comp_state_value)
-            self.push_change_event(attribute_name, comp_state_value)
-            self.push_archive_event(attribute_name, comp_state_value)
+
+            # TODO: On attribute read a segfault occurs where is_omni_thread()
+            # returns True. Some investigation is required to determine the
+            # cause of this issue.
+            if not is_omni_thread():
+                self.push_change_event(attribute_name, comp_state_value)
+                self.push_archive_event(attribute_name, comp_state_value)
 
     # -----------
     # Attributes
@@ -125,7 +130,9 @@ class B5dcProxy(SKABaseDevice):
     def rfcmFrequency(self: "B5dcProxy") -> float:
         """Reflect the PLL output frequency."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_frequency")
-        return self.component_manager.component_state.get("spi_rfcm_frequency")
+        return self.component_manager.component_state.get(
+            "spi_rfcm_frequency"
+        )  # TODO: Add defaults on attr get
 
     @attribute(
         dtype=B5dcPllState,
