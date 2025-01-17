@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Tuple
 
 from ska_control_model import ResultCode
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
-from ska_tango_base import SKABaseDevice
+from ska_tango_base import SKAController
 from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType, is_omni_thread
 from tango.server import attribute, command, run
@@ -16,7 +16,7 @@ from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
 
-class B5dcProxy(SKABaseDevice):
+class B5dcProxy(SKAController):
     """Implementation of the B5dcProxy Tango device."""
 
     # -----------------
@@ -26,11 +26,11 @@ class B5dcProxy(SKABaseDevice):
     B5dc_server_port = 10001
     B5dc_sensor_update_period = 10
 
-    class InitCommand(SKABaseDevice.InitCommand):
+    class InitCommand(SKAController.InitCommand):
         """Initializes the attributes of the B5dc Tango device."""
 
         def do(
-            self: SKABaseDevice.InitCommand,
+            self: SKAController.InitCommand,
             *args: Any,
             **kwargs: Any,
         ) -> tuple[ResultCode, str]:
@@ -62,7 +62,7 @@ class B5dcProxy(SKABaseDevice):
                 self._device.set_archive_event(attr, True, False)
 
             (result_code, message) = super().do()  # type: ignore
-            return (ResultCode(result_code), message)
+            return ResultCode(result_code), message
 
     def create_component_manager(self: "B5dcProxy") -> B5dcDeviceComponentManager:
         """
@@ -248,11 +248,11 @@ class B5dcProxy(SKABaseDevice):
     ) -> DevVarLongStringArrayType:
         """Set the attenuation on the band 5 down converter.
 
-        :param set_attenutation_db: value to set in dB
+        :param attenuation_db: value to set in dB
         """
         handler = self.get_command_object("SetAttenuation")
         result_code, unique_id = handler(attenuation_db)
-        return ([result_code], [unique_id])
+        return [result_code], [unique_id]
 
     @command(
         dtype_in=int,
@@ -267,7 +267,7 @@ class B5dcProxy(SKABaseDevice):
         """
         handler = self.get_command_object("SetFrequency")
         result_code, unique_id = handler(frequency)
-        return ([result_code], [unique_id])
+        return [result_code], [unique_id]
 
 
 def main(args: Any = None, **kwargs: Any) -> None:

@@ -153,7 +153,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 )
                 return None
             except RuntimeError as ex:
-                self.logger.error(
+                self._logger.error(
                     f"Error while requesting update to register {register_name}: {ex}"
                 )
                 return None
@@ -180,7 +180,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             try:
                 await self._update_sensor_with_lock(register_name)
             except KeyError:
-                self.logger.error(
+                self._logger.error(
                     f"Failure on request to update register value: {register_name}"
                 )
 
@@ -208,7 +208,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         for register in self._reg_to_sensor_map:
             await self._sync_register_within_event_loop(register)
 
-    def _update_component_state(self, *args: Any, **kwargs: Any) -> None:
+    def _update_component_state(self, **kwargs: Any) -> None:
         """Log and update new component state."""
         self._logger.debug("Updating B5dc component state with [%s]", kwargs)
-        super()._update_component_state(*args, **kwargs)
+        super()._update_component_state(**kwargs)
