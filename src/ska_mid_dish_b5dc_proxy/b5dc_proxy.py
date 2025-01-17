@@ -102,15 +102,11 @@ class B5dcProxy(SKAController):
     def _component_state_changed(self, *args: Any, **kwargs: Any):
         """Push and archive events on component state change."""
         if not hasattr(self, "_component_state_attr_map"):
-            self.logger.warning(
-                "Init not completed, but state is being updated [%s]", kwargs
-            )
+            self.logger.warning("Init not completed, but state is being updated [%s]", kwargs)
             return
 
         for comp_state_name, comp_state_value in kwargs.items():
-            attribute_name = self._component_state_attr_map.get(
-                comp_state_name, comp_state_name
-            )
+            attribute_name = self._component_state_attr_map.get(comp_state_name, comp_state_name)
             setattr(self, attribute_name, comp_state_value)
 
             # TODO: On attribute read a segfault occurs where is_omni_thread()
@@ -149,9 +145,7 @@ class B5dcProxy(SKAController):
     )
     def rfcmHAttenutation(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_h_attenuation"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_h_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_h_attenuation")
 
     @attribute(
@@ -160,9 +154,7 @@ class B5dcProxy(SKAController):
     )
     def rfcmVAttenutation(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_v_attenuation"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_v_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_v_attenuation")
 
     @attribute(
@@ -171,9 +163,7 @@ class B5dcProxy(SKAController):
     )
     def clkPhotodiodeCurrent(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_photo_diode_ain0"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_photo_diode_ain0")
         return self.component_manager.component_state.get("spi_rfcm_photo_diode_ain0")
 
     @attribute(
@@ -200,9 +190,7 @@ class B5dcProxy(SKAController):
     )
     def hPolRfPowerOut(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_if_out_h_ain3"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_if_out_h_ain3")
         return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3")
 
     @attribute(
@@ -211,9 +199,7 @@ class B5dcProxy(SKAController):
     )
     def vPolRfPowerOut(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_if_out_v_ain4"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_if_out_v_ain4")
         return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4")
 
     @attribute(
@@ -231,9 +217,7 @@ class B5dcProxy(SKAController):
     )
     def rfcmPsuPcbTemperature(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_psu_pcb_temp_ain7"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_psu_pcb_temp_ain7")
         return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7")
 
     # -----------
@@ -243,9 +227,7 @@ class B5dcProxy(SKAController):
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
     )
-    def SetAttenuation(
-        self: "B5dcProxy", attenuation_db: int
-    ) -> DevVarLongStringArrayType:
+    def SetAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
         """Set the attenuation on the band 5 down converter.
 
         :param attenuation_db: value to set in dB
@@ -258,9 +240,7 @@ class B5dcProxy(SKAController):
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
     )
-    def SetFrequency(
-        self: "B5dcProxy", frequency: B5dcFrequency
-    ) -> DevVarLongStringArrayType:
+    def SetFrequency(self: "B5dcProxy", frequency: B5dcFrequency) -> DevVarLongStringArrayType:
         """Set the frequency on the band 5 down converter.
 
         :param frequency: frequency to set

@@ -9,10 +9,7 @@ from typing import Any
 
 from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDevice
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcPllState
-from ska_mid_dish_dcp_lib.interface.b5dc_interface import (
-    B5dcInterface,
-    B5dcPropertyParser,
-)
+from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPropertyParser
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol
 from ska_tango_base.executor import TaskExecutorComponentManager
 
@@ -79,9 +76,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
 
         # Start the server connection event loop in a separate thread
-        self.loop_thread = threading.Thread(
-            target=self._start_connection_event_loop, daemon=True
-        )
+        self.loop_thread = threading.Thread(target=self._start_connection_event_loop, daemon=True)
         self.loop_thread.start()
 
         # Flag to indicate server connection established
@@ -102,9 +97,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         while True:
             server_connection_lost = self.loop.create_future()
             self._transport, self._protocol = await self.loop.create_datagram_endpoint(
-                lambda: B5dcProtocol(
-                    server_connection_lost, self._logger, self._server_addr
-                ),
+                lambda: B5dcProtocol(server_connection_lost, self._logger, self._server_addr),
                 local_addr=("0.0.0.0", 0),
                 remote_addr=self._server_addr,
             )
@@ -148,9 +141,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             try:
                 asyncio.run(self._update_sensor_with_lock(register_name))
             except KeyError:
-                self._logger.error(
-                    f"Error on request to update unknown register: {register_name}"
-                )
+                self._logger.error(f"Error on request to update unknown register: {register_name}")
                 return None
             except RuntimeError as ex:
                 self._logger.error(
@@ -180,9 +171,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             try:
                 await self._update_sensor_with_lock(register_name)
             except KeyError:
-                self._logger.error(
-                    f"Failure on request to update register value: {register_name}"
-                )
+                self._logger.error(f"Failure on request to update register value: {register_name}")
 
             self._update_component_state(
                 **{
