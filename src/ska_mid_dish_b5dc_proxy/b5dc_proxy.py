@@ -42,7 +42,6 @@ class B5dcProxy(SKABaseDevice):
 
             :return: A tuple containing a return code and a string
             """
-            # REVIEW: Sensor names used for attrs rather than reg names?
             self._device._component_state_attr_map = {
                 "spi_rfcm_frequency": "rfcmFrequency",
                 "spi_rfcm_pll_lock": "rfcmPllLock",
@@ -131,7 +130,7 @@ class B5dcProxy(SKABaseDevice):
         """Reflect the PLL output frequency."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_frequency")
         return self.component_manager.component_state.get(
-            "spi_rfcm_frequency"
+            "spi_rfcm_frequency", 0.0
         )  # TODO: Add defaults on attr get
 
     @attribute(
@@ -141,7 +140,9 @@ class B5dcProxy(SKABaseDevice):
     def rfcmPllLock(self: "B5dcProxy") -> B5dcPllState:
         """To be filled."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_pll_lock")
-        return self.component_manager.component_state.get("spi_rfcm_pll_lock")
+        return self.component_manager.component_state.get(
+            "spi_rfcm_pll_lock", B5dcPllState.NOT_LOCKED
+        )
 
     @attribute(
         dtype=float,
@@ -152,7 +153,7 @@ class B5dcProxy(SKABaseDevice):
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_h_attenuation"
         )
-        return self.component_manager.component_state.get("spi_rfcm_h_attenuation")
+        return self.component_manager.component_state.get("spi_rfcm_h_attenuation", 0.0)
 
     @attribute(
         dtype=float,
@@ -163,7 +164,7 @@ class B5dcProxy(SKABaseDevice):
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_v_attenuation"
         )
-        return self.component_manager.component_state.get("spi_rfcm_v_attenuation")
+        return self.component_manager.component_state.get("spi_rfcm_v_attenuation", 0.0)
 
     @attribute(
         dtype=float,
@@ -174,7 +175,9 @@ class B5dcProxy(SKABaseDevice):
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_photo_diode_ain0"
         )
-        return self.component_manager.component_state.get("spi_rfcm_photo_diode_ain0")
+        return self.component_manager.component_state.get(
+            "spi_rfcm_photo_diode_ain0", 0.0
+        )
 
     @attribute(
         dtype=float,
@@ -183,7 +186,7 @@ class B5dcProxy(SKABaseDevice):
     def hPolRfPowerIn(self: "B5dcProxy") -> float:
         """To be filled."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_in_h_ain1")
-        return self.component_manager.component_state.get("spi_rfcm_rf_in_h_ain1")
+        return self.component_manager.component_state.get("spi_rfcm_rf_in_h_ain1", 0.0)
 
     @attribute(
         dtype=float,
@@ -192,7 +195,7 @@ class B5dcProxy(SKABaseDevice):
     def vPolRfPowerIn(self: "B5dcProxy") -> float:
         """To be filled."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_in_v_ain2")
-        return self.component_manager.component_state.get("spi_rfcm_rf_in_v_ain2")
+        return self.component_manager.component_state.get("spi_rfcm_rf_in_v_ain2", 0.0)
 
     @attribute(
         dtype=float,
@@ -203,7 +206,7 @@ class B5dcProxy(SKABaseDevice):
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_if_out_h_ain3"
         )
-        return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3")
+        return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3", 0.0)
 
     @attribute(
         dtype=float,
@@ -214,7 +217,7 @@ class B5dcProxy(SKABaseDevice):
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_if_out_v_ain4"
         )
-        return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4")
+        return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4", 0.0)
 
     @attribute(
         dtype=float,
@@ -223,7 +226,7 @@ class B5dcProxy(SKABaseDevice):
     def rfTemperature(self: "B5dcProxy") -> float:
         """To be filled."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_temp_ain5")
-        return self.component_manager.component_state.get("spi_rfcm_rf_temp_ain5")
+        return self.component_manager.component_state.get("spi_rfcm_rf_temp_ain5", 0.0)
 
     @attribute(
         dtype=float,
@@ -234,7 +237,9 @@ class B5dcProxy(SKABaseDevice):
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_psu_pcb_temp_ain7"
         )
-        return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7")
+        return self.component_manager.component_state.get(
+            "spi_rfcm_psu_pcb_temp_ain7", 0.0
+        )
 
     # -----------
     # Commands
