@@ -19,6 +19,7 @@ def version_fixture() -> str:
 
 
 # This is a sample pytest test function with the pytest fixture as an argument.
+@pytest.mark.unit
 def test_content(version: str) -> None:
     """
     Check that the package version is as expected.
