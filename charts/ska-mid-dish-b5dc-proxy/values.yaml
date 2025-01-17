@@ -32,11 +32,11 @@ b5dcmanager:
     image: ska-mid-dish-b5dc-proxy
     tag: 0.0.1
     pullPolicy: IfNotPresent
-  host:
-  port:
+  fqdns: []
+  B5dc_sensor_update_period: "10"
 
 deviceServers:
   dsmanager:
-    file: "data/ds_manager.yaml"
+    file: "data/b5dc_manager.yaml"
     enabled: true
 

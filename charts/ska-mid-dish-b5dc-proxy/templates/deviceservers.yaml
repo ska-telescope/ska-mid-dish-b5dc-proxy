@@ -1,11 +1,11 @@
 {{ $localchart := . }}
 
 {{- $lengthdishes := len .Values.global.dishes }}
-{{- $lengthfqdns := len .Values.dishstructuremanager.dsc.fqdns }}
+{{- $lengthfqdns := len .Values.b5dcmanager.fqdns }}
 
 {{- if ne $lengthfqdns 0 }}
     {{- if ne $lengthdishes $lengthfqdns }}
-        {{- fail (printf "global.dishes (%d) and dishstructuremanager.dsc.fqdns (%d) must have the same length when fqdns are specified" $lengthdishes $lengthfqdns ) }}
+        {{- fail (printf "global.dishes (%d) and b5dcmanager.fqdns (%d) must have the same length when fqdns are specified" $lengthdishes $lengthfqdns ) }}
     {{- end }}
 {{- end }}
 

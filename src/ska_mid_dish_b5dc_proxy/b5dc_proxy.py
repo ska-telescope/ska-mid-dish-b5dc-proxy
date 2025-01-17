@@ -9,7 +9,7 @@ from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dc
 from ska_tango_base import SKAController
 from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType, is_omni_thread
-from tango.server import attribute, command, run
+from tango.server import attribute, device_property, command, run
 
 from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 
@@ -22,9 +22,8 @@ class B5dcProxy(SKAController):
     # -----------------
     # Device Properties
     # -----------------
-    B5dc_server_ip = "127.0.0.1"
-    B5dc_server_port = 10001
-    B5dc_sensor_update_period = 10
+    DSCFqdn = device_property(dtype=str, default_value="127.0.0.1:10001")
+    B5dc_sensor_update_period = device_property(dtype=str, default_value="10")
 
     class InitCommand(SKAController.InitCommand):
         """Initializes the attributes of the B5dc Tango device."""
@@ -70,10 +69,12 @@ class B5dcProxy(SKAController):
 
         :return: The B5dc component manager
         """
+        B5dc_server_ip = self.DSCFqdn.split(":")[0]
+        B5dc_server_port = int(self.DSCFqdn.split(":")[1])
         return B5dcDeviceComponentManager(
-            self.B5dc_server_ip,
-            self.B5dc_server_port,
-            self.B5dc_sensor_update_period,
+            B5dc_server_ip,
+            B5dc_server_port,
+            int(self.B5dc_sensor_update_period),
             logger=self.logger,
             component_state_callback=self._component_state_changed,
         )

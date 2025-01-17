@@ -22,12 +22,16 @@ server:
                 - name: "LoggingLevelDefault"
                   values:
                     - "5"
-                - name: "B5DCHost"
+                - name: "DSCFqdn"
                   values:
-                    - {{ $.Values.b5dcmanager.host | default {{ printf "b5dc-simulator-%s-svc" $dish_id }} }}
-                - name: "B5DCPort"
+                    {{- if eq (len $.Values.b5dcmanager.fqdns) 0 }}
+                    - {{ printf "b5dc-server-simulator-%s-svc:10001" $dish_id }}
+                    {{- else }}
+                    - {{ index $.Values.b5dcmanager.fqdns $idx }}
+                    {{- end }}
+                - name: "B5dc_sensor_update_period"
                   values:
-                    - {{ $.Values.b5dcmanager.port | default "1234" }}
+                    - "{{ $.Values.b5dcmanager.B5dc_sensor_update_period }}"
 
   {{- end }}
 depends_on:
