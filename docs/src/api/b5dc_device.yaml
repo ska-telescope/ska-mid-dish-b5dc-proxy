@@ -1,0 +1,642 @@
+- class: B5dcProxy
+  meta:
+    commands:
+      - name: AbortCommands
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVarLongStringArray
+      - name: CheckLongRunningCommandStatus
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevString
+        dtype_out: DevString
+      - name: DebugDevice
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: The TCP port the debugger is listening on.
+        dtype_in: DevVoid
+        dtype_out: DevUShort
+      - name: ExecutePendingOperations
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVoid
+      - name: GetVersionInfo
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVarStringArray
+      - name: Init
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVoid
+      - name: "Off"
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVarLongStringArray
+      - name: "On"
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVarLongStringArray
+      - name: Reset
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVarLongStringArray
+      - name: SetAttenuation
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevLong64
+        dtype_out: DevVarLongStringArray
+      - name: SetFrequency
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevLong64
+        dtype_out: DevVarLongStringArray
+      - name: Standby
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Uninitialised
+        dtype_in: DevVoid
+        dtype_out: DevVarLongStringArray
+      - name: State
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Device state
+        dtype_in: DevVoid
+        dtype_out: DevState
+      - name: Status
+        disp_level: OPERATOR
+        doc_in: Uninitialised
+        doc_out: Device status
+        dtype_in: DevVoid
+        dtype_out: DevString
+    attributes:
+      - name: State
+        data_format: SCALAR
+        data_type: DevState
+        description: No description
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: Not specified
+        label: State
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: Status
+        data_format: SCALAR
+        data_type: DevString
+        description: No description
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: Status
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: adminMode
+        data_format: SCALAR
+        data_type: DevEnum
+        description: "\n    Read the Admin Mode of the device.\n\n    It may\
+          \ interpret the current device condition and condition of all managed\n\
+          \          devices to set this. Most possibly an aggregate attribute.\n\n\
+          \ :return: Admin Mode of the device\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        enum_labels:
+          - ONLINE
+          - OFFLINE
+          - ENGINEERING
+          - NOT_FITTED
+          - RESERVED
+        format: "%s"
+        label: adminMode
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ_WRITE
+        writable_attr_name: adminMode
+      - name: buildState
+        data_format: SCALAR
+        data_type: DevString
+        description: "\n    Read the Build State of the device.\n\n          \
+          \ :return: the build state of the device\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: buildState
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: clkPhotodiodeCurrent
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: clkPhotodiodeCurrent
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: commandedState
+        data_format: SCALAR
+        data_type: DevString
+        description:
+          "\n    Read the last commanded operating state of the device.\n\n          \
+          \ Initial string is \"None\". Only other strings it can change to \
+          \ is \"OFF\",\n    \"STANDBY\" or \"ON\", following the start of the Off(),\
+          \ Standby(), On() or Reset()\n    long running commands.\n\n    :return:\
+          \ commanded operating state string.\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: commandedState
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: controlMode
+        data_format: SCALAR
+        data_type: DevEnum
+        description: "\n    Read the Control Mode of the device.\n\n          \
+          \ The control mode of the device are REMOTE, LOCAL\n    Tango Device accepts\
+          \ only from a \u2018local\u2019 client and ignores commands and\n    queries\
+          \ received from TM or any other \u2018remote\u2019 clients. The Local clients\n\
+          \            has to release LOCAL control before REMOTE clients can take control\
+          \ again.\n\n    :return: Control Mode of the device\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        enum_labels:
+          - REMOTE
+          - LOCAL
+        format: "%s"
+        label: controlMode
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ_WRITE
+        writable_attr_name: controlMode
+      - name: hPolRfPowerIn
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: hPolRfPowerIn
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: hPolRfPowerOut
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: hPolRfPowerOut
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: healthState
+        data_format: SCALAR
+        data_type: DevEnum
+        description: "\n    Read the Health State of the device.\n\n          \
+          \ It interprets the current device condition and condition of\n\
+          \            all managed devices\ to set this. Most possibly an aggregate attribute.\n\n            :return: Health\
+          \ State of the device\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        enum_labels:
+          - OK
+          - DEGRADED
+          - FAILED
+          - UNKNOWN
+        format: "%s"
+        label: healthState
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: loggingLevel
+        data_format: SCALAR
+        data_type: DevEnum
+        description: "\n    Read the logging level of the device.\n\n          \
+          \ Initialises to LoggingLevelDefault on startup.\n    See :py:class:`~ska_control_model.LoggingLevel`\n\
+          \n    :return:    Logging level of the device.\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        enum_labels:
+          - "OFF"
+          - FATAL
+          - ERROR
+          - WARNING
+          - INFO
+          - DEBUG
+        format: "%s"
+        label: loggingLevel
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ_WRITE
+        writable_attr_name: loggingLevel
+      - name: loggingTargets
+        data_format: SPECTRUM
+        data_type: DevString
+        description:
+          "\n    Read the additional logging targets of the device.\n\n
+          \ Note that this excludes the handlers provided by the ska_ser_logging\n
+          \ library defaults - initialises to LoggingTargetsDefault on startup.\n\
+          \n    :return:    Logging level of the device.\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: loggingTargets
+        max_alarm: Not specified
+        max_dim_x: 4
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ_WRITE
+        writable_attr_name: loggingTargets
+      - name: longRunningCommandIDsInQueue
+        data_format: SPECTRUM
+        data_type: DevString
+        description:
+          "\n    Read the IDs of the long running commands in the queue.\n\n          \
+          \ Every client that executes a command will receive a command ID as \n
+          \ response.\n    Keep track of IDs currently allocated.\n    Entries\
+          \ are removed `self._command_tracker._removal_time` seconds\n    after\
+          \ they have finished.\n\n    :param attr: Tango attribute being read\n\\    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: longRunningCommandIDsInQueue
+        max_alarm: Not specified
+        max_dim_x: 65
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: longRunningCommandInProgress
+        data_format: SPECTRUM
+        data_type: DevString
+        description:
+          "\n    Read the name(s) of the currently executing long running\
+          \ command(s).\n\n    Name(s) of command and possible abort in progress \
+          \ or empty string(s).\n    :param attr: Tango attribute being read\n\\  "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: longRunningCommandInProgress
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: longRunningCommandProgress
+        data_format: SPECTRUM
+        data_type: DevString
+        description:
+          "\n    Read the progress of the currently executing long running\
+          \ command(s).\n\n    ID, progress of the currently executing command(s).\n\
+          \            Clients can subscribe to on_change event and wait\n    for the\
+          \ ID they are interested in.\n\n    :param attr: Tango attribute being\\ read\n"
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: longRunningCommandProgress
+        max_alarm: Not specified
+        max_dim_x: 2
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: longRunningCommandResult
+        data_format: SPECTRUM
+        data_type: DevString
+        description:
+          "\n    Read the result of the completed long running command.\n\
+          \n    Reports unique_id, json-encoded result.\n    Clients can subscribe\
+          \ to on_change event and wait for\n    the ID they are interested in.\n\
+          \n    :return: ID, result.\n"
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: longRunningCommandResult
+        max_alarm: Not specified
+        max_dim_x: 2
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: longRunningCommandStatus
+        data_format: SPECTRUM
+        data_type: DevString
+        description:
+          "\n    Read the status of the currently executing long running commands.\n\
+          \n    ID, status pairs of the currently executing commands.\n\
+          \n    Clients can subscribe to on_change event and wait for the\n\
+          \            ID they are interested in.\n\n    :param attr: Tango attribute being\
+          \ read\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: longRunningCommandStatus
+        max_alarm: Not specified
+        max_dim_x: 130
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: longRunningCommandsInQueue
+        data_format: SPECTRUM
+        data_type: DevString
+        description:
+          "\n    Read the long running commands in the queue.\n\n          \
+          \ Keep track of which commands are that are currently known about.\n\
+          \            Entries are removed `self._command_tracker._removal_time` seconds\n\
+          \            after they have finished.\n\n    :param attr: Tango attribute\
+          \ being read\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: longRunningCommandsInQueue
+        max_alarm: Not specified
+        max_dim_x: 65
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: rfTemperature
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: rfTemperature
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: rfcmFrequency
+        data_format: SCALAR
+        data_type: DevDouble
+        description: Reflect the PLL output frequency.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: rfcmFrequency
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: rfcmHAttenutation
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: rfcmHAttenutation
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: rfcmPllLock
+        data_format: SCALAR
+        data_type: DevEnum
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        enum_labels:
+          - LOCKED
+          - LOCKED_WITH_LOSS_DETECTED
+          - NOT_LOCKED
+          - NOT_LOCKED_WITH_LOSS_DETECTED
+        format: "%s"
+        label: rfcmPllLock
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: rfcmPsuPcbTemperature
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: rfcmPsuPcbTemperature
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: rfcmVAttenutation
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: rfcmVAttenutation
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: simulationMode
+        data_format: SCALAR
+        data_type: DevEnum
+        description:
+          "\n    Read the Simulation Mode of the device.\n\n          \
+          \ Some devices may implement\n    both modes, while others will have simulators\
+          \ that set simulationMode\n    to True while the real devices always set\
+          \ simulationMode to False.\n\n    :return: Simulation Mode of the device.\n\\    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        enum_labels:
+          - "FALSE"
+          - "TRUE"
+        format: "%s"
+        label: simulationMode
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ_WRITE
+        writable_attr_name: simulationMode
+      - name: testMode
+        data_format: SCALAR
+        data_type: DevEnum
+        description: "\n    Read the Test Mode of the device.\n\n          \
+          \ Either no test mode or an indication of the test mode.\n\n    :return: Test\
+          \ Mode of the device\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        enum_labels:
+          - NONE
+          - TEST
+        format: "%s"
+        label: testMode
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ_WRITE
+        writable_attr_name: testMode
+      - name: vPolRfPowerIn
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: vPolRfPowerIn
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: vPolRfPowerOut
+        data_format: SCALAR
+        data_type: DevDouble
+        description: To be filled.
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%6.2f"
+        label: vPolRfPowerOut
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+      - name: versionId
+        data_format: SCALAR
+        data_type: DevString
+        description: "\n    Read the Version Id of the device.\n\n    :return:\
+          \ the version id of the device\n    "
+        disp_level: OPERATOR
+        display_unit: No display unit
+        format: "%s"
+        label: versionId
+        max_alarm: Not specified
+        max_dim_x: 1
+        max_value: Not specified
+        min_alarm: Not specified
+        min_value: Not specified
+        standard_unit: No standard unit
+        writable: READ
+        writable_attr_name: None
+                properties:
+                - name: polled_cmd
