@@ -6,6 +6,9 @@ authors = ["Yashren Reddi <yreddi@sarao.ac.za>"]
 license= "BSD-3-Clause"
 readme = "README.md"
 
+[tool.poetry.scripts]
+B5DCManager = 'ska_mid_dish_b5dc_proxy.b5dc_proxy:main'
+
 [[tool.poetry.source]]
 name = 'skao'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
