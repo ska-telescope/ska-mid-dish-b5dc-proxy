@@ -84,9 +84,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
         self.loop_thread.start()
 
-        # Flag to indicate server connection established and component states
-        # synchronized to b5dc device sensors
-        self._con_established_and_synced = threading.Event()
+        # Flag to indicate server connection established
+        self._con_established = threading.Event()
 
         # Lock to prevent contention on request to update B5dc device sensors
         self._sensor_update_lock = asyncio.Lock()
@@ -121,9 +120,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
             # Sync component state to sensor values on connection start before
             # setting polling loop
-            await self._update_all_registers()
-
-            self._con_established_and_synced.set()
+            self._con_established.set()
 
             self.loop.create_task(self._periodically_poll_sensor_values())
 
@@ -145,10 +142,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             await self._b5dc_device.sensors.update_sensor(register_name)
 
     # Update a single sensor value, and the component state from outside the event loop
-    # Was called: _sync_component_state
     def sync_register_outside_event_loop(self, register_name: str) -> None:
         """Update singular B5dc device sensor and sync component state."""
-        if self._con_established_and_synced.is_set():
+        if self._con_established.is_set():
             try:
                 asyncio.run(self._update_sensor_with_lock(register_name))
             except KeyError:
@@ -202,15 +198,11 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     # Polling loop task to be added to event loop in thread
     async def _periodically_poll_sensor_values(self) -> None:
         """Run indefinite loop to periodically update all sensors values."""
-        # Wait before running the polling loop for the first time as component
-        # states are already synchronised on connection
-        await asyncio.sleep(self._polling_period)
         while True:
-            if self._con_established_and_synced.is_set():
+            if self._con_established.is_set():
                 await self._update_all_registers()
                 await asyncio.sleep(self._polling_period)
 
-    # Was called: _sync_all_component_states
     async def _update_all_registers(self) -> None:
         """Update all B5dc device sensors and sync component state."""
         for register in self._reg_to_sensor_map:
