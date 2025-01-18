@@ -36,7 +36,7 @@ b5dcmanager:
   B5dc_sensor_update_period: "10"
 
 deviceServers:
-  b5dc_manager:
+  b5dc-manager:
     file: "data/b5dc_manager.yaml"
     enabled: true
 
