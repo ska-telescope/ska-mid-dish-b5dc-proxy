@@ -40,7 +40,7 @@ COPY --from=build /build/pyproject.toml .
 # COPY --from=build /build/poetry.lock /app/poetry.lock
 
 # Add source code to the PYTHONPATH so Python can locate the package
-COPY ./src/ska_mid_dish_b5dc_proxy/ ./src/ska_mid_dish_b5dc_proxy/
+COPY ./src/ska_mid_dish_b5dc_proxy/ ./ska_mid_dish_b5dc_proxy/
 ENV PYTHONPATH=${PYTHONPATH}:/app/
 
 # Metadata labels
