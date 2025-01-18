@@ -34,6 +34,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy the virtual environment from the build stage
 COPY --from=build ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=build /build/pyproject.toml .
 
 # Uncomment below to store lock file
 # COPY --from=build /build/poetry.lock /app/poetry.lock
