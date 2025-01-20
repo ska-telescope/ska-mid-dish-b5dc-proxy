@@ -315,7 +315,7 @@
       - name: hPolRfPowerIn
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflets the rf power in dBm from register value.
+        description: Reflets the RFCM RF in H Pol power in dBm from register value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
@@ -331,7 +331,7 @@
       - name: hPolRfPowerOut
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflects the if power out in dBm from register value.
+        description: Reflects the RFCM IF out H Pol power in dBm from register value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
@@ -561,7 +561,7 @@
       - name: rfTemperature
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflects the temperature in deg C from register value.
+        description: Reflects the RFCM RF PCB temperature in deg C from register value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
@@ -593,7 +593,9 @@
       - name: rfcmHAttenuation
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflects the attenuation value in dB from register value.
+        description:
+          Reflects the RFCM H polarization attenuation value in dB from register
+          value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
@@ -630,7 +632,7 @@
       - name: rfcmPsuPcbTemperature
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflects temperature in deg C from register value.
+        description: Reflects RFCM PSU PCB temperature in deg C from register value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
@@ -646,7 +648,9 @@
       - name: rfcmVAttenuation
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflects the attenuation value in dB from register value.
+        description:
+          Reflects the RFCM V polarization attenuation value in dB from register
+          value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
@@ -708,7 +712,7 @@
       - name: vPolRfPowerIn
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflects the rf power in dBm from register value.
+        description: Reflects the RFCM RF in V Pol power in dBm from register value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
@@ -724,7 +728,7 @@
       - name: vPolRfPowerOut
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflects the if power out in dBm from register value.
+        description: Reflects the RFCM IF out V Pol power in dBm from register value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
