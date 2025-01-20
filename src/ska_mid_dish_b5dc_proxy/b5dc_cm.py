@@ -47,8 +47,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
             "spi_rfcm_pll_lock": "rfcm_pll_lock",
-            "spi_rfcm_h_attenuation": "rfcm_h_attenutation_db",
-            "spi_rfcm_v_attenuation": "rfcm_v_attenutation_db",
+            "spi_rfcm_h_attenuation": "rfcm_h_attenuation_db",
+            "spi_rfcm_v_attenuation": "rfcm_v_attenuation_db",
             "spi_rfcm_photo_diode_ain0": "clk_photodiode_current_ma",
             "spi_rfcm_rf_in_h_ain1": "h_pol_rf_power_in_dbm",
             "spi_rfcm_rf_in_v_ain2": "v_pol_rf_power_in_dbm",
