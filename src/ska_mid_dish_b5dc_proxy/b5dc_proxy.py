@@ -122,9 +122,10 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="Indicates the PLL Output Frequency. The default value is 11.1 GHz",
     )
     def rfcmFrequency(self: "B5dcProxy") -> float:
-        """Reflect the PLL output frequency."""
+        """Reflect the PLL output frequency in GHz."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_frequency")
         return self.component_manager.component_state.get(
             "spi_rfcm_frequency", 0.0
@@ -133,9 +134,10 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=B5dcPllState,
         access=AttrWriteType.READ,
+        doc="Status flags for RFCM PLL lock and lock loss detection.",
     )
     def rfcmPllLock(self: "B5dcProxy") -> B5dcPllState:
-        """To be filled."""
+        """Return the Phase lock loop state."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_pll_lock")
         return self.component_manager.component_state.get(
             "spi_rfcm_pll_lock", B5dcPllState.NOT_LOCKED
@@ -144,81 +146,90 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="RFCM H Polarization Attenuation to Register Value Div 2",
     )
     def rfcmHAttenuation(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the rfcmHAttenuation."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_h_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_h_attenuation", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="RFCM V Polarization Attenuation of Register Value Div 2",
     )
     def rfcmVAttenuation(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the rfcmVAttenuation."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_v_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_v_attenuation", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="12 bit (2.5V) ADC code conversion of LBC photo diode (8V) current.",
     )
     def clkPhotodiodeCurrent(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the current of the LBC photo diode in mA."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_photo_diode_ain0")
         return self.component_manager.component_state.get("spi_rfcm_photo_diode_ain0", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="12 bit (2.5V) ADC code conversion of RFCM RF in H Pol RF Power.",
     )
     def hPolRfPowerIn(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the RF power for H polarization in dBm."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_in_h_ain1")
         return self.component_manager.component_state.get("spi_rfcm_rf_in_h_ain1", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="12 bit (2.5V) ADC code conversion of RFCM RF in V Pol RF Power.",
     )
     def vPolRfPowerIn(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the RF input power for V polarization in dBm."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_in_v_ain2")
         return self.component_manager.component_state.get("spi_rfcm_rf_in_v_ain2", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="12 bit (2.5V) ADC code conversion of RFCM IF out H Pol RF Power.",
     )
     def hPolRfPowerOut(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the IF output power for H polarization in dBm."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_if_out_h_ain3")
         return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="12 bit (2.5V) ADC code conversion of RFCM IF out V Pol RF Power.",
     )
     def vPolRfPowerOut(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the IF output power for V polarization in dBm."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_if_out_v_ain4")
         return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="12 bit (2.5V) ADC code conversion of RFCM RF PCB Temperature.",
     )
     def rfTemperature(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the the temperature of the RFCM RF PCB in deg."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_rf_temp_ain5")
         return self.component_manager.component_state.get("spi_rfcm_rf_temp_ain5", 0.0)
 
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
+        doc="12 bit (2.5V) ADC code conversion of RFCM PSU PCB Temperature.",
     )
     def rfcmPsuPcbTemperature(self: "B5dcProxy") -> float:
-        """To be filled."""
+        """Return the temperature of the RFCM PSU PCB in deg."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_psu_pcb_temp_ain7")
         return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7", 0.0)
 
