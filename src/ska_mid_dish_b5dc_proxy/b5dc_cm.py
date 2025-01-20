@@ -192,7 +192,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         while True:
             if self._con_established.is_set():
                 await self._update_all_registers()
-                await asyncio.sleep(self._polling_period)
+            await asyncio.sleep(self._polling_period)
 
     async def _update_all_registers(self) -> None:
         """Update all B5dc device sensors and sync component state."""
