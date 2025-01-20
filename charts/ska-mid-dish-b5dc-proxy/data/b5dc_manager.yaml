@@ -1,0 +1,43 @@
+name: "b5dc-manager-{{.Release.Name}}"
+function: telescope-monitoring
+domain: general-monitoring
+command: "B5DCManager"
+server:
+  name: "B5DCManager"
+  instances:
+  {{- range $idx, $dish_id := (.Values.global.dishes | toStrings) }}
+    {{- $dish_id := ($dish_id | trim)}}
+    - name: "{{ $dish_id }}"
+      classes:
+        - name: "B5DCManager"
+          devices:
+            - name: "mid-dish/b5dc-manager/SKA{{ printf "%01s" $dish_id }}"
+              properties:
+                - name: "SkaLevel"
+                  values:
+                    - "1"
+                - name: "LoggingTargetsDefault"
+                  values:
+                    - "tango::logger"
+                - name: "LoggingLevelDefault"
+                  values:
+                    - "5"
+                - name: "DSCFqdn"
+                  values:
+                    {{- if eq (len $.Values.b5dcmanager.fqdns) 0 }}
+                    - {{ printf "b5dc-server-simulator-%s-svc:10001" $dish_id }}
+                    {{- else }}
+                    - {{ index $.Values.b5dcmanager.fqdns $idx }}
+                    {{- end }}
+                - name: "B5dc_sensor_update_period"
+                  values:
+                    - "{{ $.Values.b5dcmanager.B5dc_sensor_update_period }}"
+
+  {{- end }}
+depends_on:
+  - device: sys/database/2
+image:
+  registry: "{{.Values.b5dcmanager.image.registry}}"
+  image: "{{.Values.b5dcmanager.image.image}}"
+  tag: "{{.Values.b5dcmanager.image.tag}}"
+  pullPolicy: "{{.Values.b5dcmanager.image.pullPolicy}}"

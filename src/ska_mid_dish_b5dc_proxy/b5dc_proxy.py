@@ -6,31 +6,30 @@ from typing import Any, List, Optional, Tuple
 
 from ska_control_model import ResultCode
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
-from ska_tango_base import SKABaseDevice
+from ska_tango_base import SKAController
 from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType, is_omni_thread
-from tango.server import attribute, command, run
+from tango.server import attribute, command, device_property, run
 
 from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
 
-class B5dcProxy(SKABaseDevice):
+class B5dcProxy(SKAController):
     """Implementation of the B5dcProxy Tango device."""
 
     # -----------------
     # Device Properties
     # -----------------
-    B5dc_server_ip = "127.0.0.1"
-    B5dc_server_port = 10001
-    B5dc_sensor_update_period = 10
+    DSCFqdn = device_property(dtype=str, default_value="127.0.0.1:10001")
+    B5dc_sensor_update_period = device_property(dtype=str, default_value="10")
 
-    class InitCommand(SKABaseDevice.InitCommand):
+    class InitCommand(SKAController.InitCommand):
         """Initializes the attributes of the B5dc Tango device."""
 
         def do(
-            self: SKABaseDevice.InitCommand,
+            self: SKAController.InitCommand,
             *args: Any,
             **kwargs: Any,
         ) -> tuple[ResultCode, str]:
@@ -61,7 +60,7 @@ class B5dcProxy(SKABaseDevice):
                 self._device.set_archive_event(attr, True, False)
 
             (result_code, message) = super().do()  # type: ignore
-            return (ResultCode(result_code), message)
+            return ResultCode(result_code), message
 
     def create_component_manager(self: "B5dcProxy") -> B5dcDeviceComponentManager:
         """
@@ -69,10 +68,12 @@ class B5dcProxy(SKABaseDevice):
 
         :return: The B5dc component manager
         """
+        B5dc_server_ip = self.DSCFqdn.split(":")[0]
+        B5dc_server_port = int(self.DSCFqdn.split(":")[1])
         return B5dcDeviceComponentManager(
-            self.B5dc_server_ip,
-            self.B5dc_server_port,
-            self.B5dc_sensor_update_period,
+            B5dc_server_ip,
+            B5dc_server_port,
+            int(self.B5dc_sensor_update_period),
             logger=self.logger,
             component_state_callback=self._component_state_changed,
         )
@@ -101,15 +102,11 @@ class B5dcProxy(SKABaseDevice):
     def _component_state_changed(self, *args: Any, **kwargs: Any):
         """Push and archive events on component state change."""
         if not hasattr(self, "_component_state_attr_map"):
-            self.logger.warning(
-                "Init not completed, but state is being updated [%s]", kwargs
-            )
+            self.logger.warning("Init not completed, but state is being updated [%s]", kwargs)
             return
 
         for comp_state_name, comp_state_value in kwargs.items():
-            attribute_name = self._component_state_attr_map.get(
-                comp_state_name, comp_state_name
-            )
+            attribute_name = self._component_state_attr_map.get(comp_state_name, comp_state_name)
             setattr(self, attribute_name, comp_state_value)
 
             # TODO: On attribute read a segfault occurs where is_omni_thread()
@@ -248,31 +245,27 @@ class B5dcProxy(SKABaseDevice):
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
     )
-    def SetAttenuation(
-        self: "B5dcProxy", attenuation_db: int
-    ) -> DevVarLongStringArrayType:
+    def SetAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
         """Set the attenuation on the band 5 down converter.
 
-        :param set_attenutation_db: value to set in dB
+        :param attenuation_db: value to set in dB
         """
         handler = self.get_command_object("SetAttenuation")
         result_code, unique_id = handler(attenuation_db)
-        return ([result_code], [unique_id])
+        return [result_code], [unique_id]
 
     @command(
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
     )
-    def SetFrequency(
-        self: "B5dcProxy", frequency: B5dcFrequency
-    ) -> DevVarLongStringArrayType:
+    def SetFrequency(self: "B5dcProxy", frequency: B5dcFrequency) -> DevVarLongStringArrayType:
         """Set the frequency on the band 5 down converter.
 
         :param frequency: frequency to set
         """
         handler = self.get_command_object("SetFrequency")
         result_code, unique_id = handler(frequency)
-        return ([result_code], [unique_id])
+        return [result_code], [unique_id]
 
 
 def main(args: Any = None, **kwargs: Any) -> None:
