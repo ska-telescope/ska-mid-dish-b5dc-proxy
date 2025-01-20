@@ -7,7 +7,7 @@ import logging
 import threading
 from typing import Any
 
-from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDevice
+from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDeviceSensors
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcPllState
 from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPropertyParser
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol
@@ -76,7 +76,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
 
         # Start the server connection event loop in a separate thread
-        self.loop_thread = threading.Thread(target=self._start_connection_event_loop, daemon=True)
+        self.loop_thread = threading.Thread(
+            target=self._start_connection_event_loop, daemon=True, name="Asyncio loop thread"
+        )
         self.loop_thread.start()
 
         # Flag to indicate server connection established
@@ -109,7 +111,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 get_method=self._protocol.sync_read_register,
                 set_method=self._protocol.sync_write_register,
             )
-            self._b5dc_device = B5dcDevice(self._logger, self._b5dc_interface)
+            self._b5dc_device_sensors = B5dcDeviceSensors(self._logger, self._b5dc_interface)
 
             # Sync component state to sensor values on connection start before
             # setting polling loop
@@ -132,7 +134,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     async def _update_sensor_with_lock(self, register_name: str) -> None:
         """Acquire the sensor map lock and request b5dc device sensor update."""
         async with self._sensor_update_lock:
-            await self._b5dc_device.sensors.update_sensor(register_name)
+            await self._b5dc_device_sensors.update_sensor(register_name)
 
     # Update a single sensor value, and the component state from outside the event loop
     def sync_register_outside_event_loop(self, register_name: str) -> None:
@@ -152,7 +154,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             self._update_component_state(
                 **{
                     register_name: getattr(
-                        self._b5dc_device.sensors,
+                        self._b5dc_device_sensors,
                         self._reg_to_sensor_map[register_name],
                     )
                 }
@@ -176,7 +178,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             self._update_component_state(
                 **{
                     register_name: getattr(
-                        self._b5dc_device.sensors,
+                        self._b5dc_device_sensors,
                         self._reg_to_sensor_map[register_name],
                     )
                 }
@@ -201,3 +203,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         """Log and update new component state."""
         self._logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(**kwargs)
+
+    def is_connection_established(self) -> bool:
+        """Return if connection is established."""
+        return self._con_established.is_set()
