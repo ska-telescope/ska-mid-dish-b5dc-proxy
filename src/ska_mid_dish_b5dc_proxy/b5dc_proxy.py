@@ -147,9 +147,7 @@ class B5dcProxy(SKAController):
     )
     def rfcmHAttenuation(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_h_attenuation"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_h_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_h_attenuation", 0.0)
 
     @attribute(
@@ -158,9 +156,7 @@ class B5dcProxy(SKAController):
     )
     def rfcmVAttenuation(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_v_attenuation"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_v_attenuation")
         return self.component_manager.component_state.get("spi_rfcm_v_attenuation", 0.0)
 
     @attribute(
@@ -169,12 +165,8 @@ class B5dcProxy(SKAController):
     )
     def clkPhotodiodeCurrent(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_photo_diode_ain0"
-        )
-        return self.component_manager.component_state.get(
-            "spi_rfcm_photo_diode_ain0", 0.0
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_photo_diode_ain0")
+        return self.component_manager.component_state.get("spi_rfcm_photo_diode_ain0", 0.0)
 
     @attribute(
         dtype=float,
@@ -200,9 +192,7 @@ class B5dcProxy(SKAController):
     )
     def hPolRfPowerOut(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_if_out_h_ain3"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_if_out_h_ain3")
         return self.component_manager.component_state.get("spi_rfcm_if_out_h_ain3", 0.0)
 
     @attribute(
@@ -211,9 +201,7 @@ class B5dcProxy(SKAController):
     )
     def vPolRfPowerOut(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_if_out_v_ain4"
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_if_out_v_ain4")
         return self.component_manager.component_state.get("spi_rfcm_if_out_v_ain4", 0.0)
 
     @attribute(
@@ -231,12 +219,8 @@ class B5dcProxy(SKAController):
     )
     def rfcmPsuPcbTemperature(self: "B5dcProxy") -> float:
         """To be filled."""
-        self.component_manager.sync_register_outside_event_loop(
-            "spi_rfcm_psu_pcb_temp_ain7"
-        )
-        return self.component_manager.component_state.get(
-            "spi_rfcm_psu_pcb_temp_ain7", 0.0
-        )
+        self.component_manager.sync_register_outside_event_loop("spi_rfcm_psu_pcb_temp_ain7")
+        return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7", 0.0)
 
     # -----------
     # Commands
