@@ -1,5 +1,7 @@
 """Test client can subscribe to archive and change events."""
 
+from typing import Any
+
 import pytest
 import tango
 
@@ -20,7 +22,7 @@ attributes = [
 
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_test_attributes_exist(b5dc_proxy):
+def test_client_test_attributes_exist(b5dc_proxy: Any) -> None:
     """Verify b5dc attributes exposed."""
     attr = b5dc_proxy.get_attribute_list()
     assert set(attributes).issubset(set(attr))
@@ -29,7 +31,7 @@ def test_client_test_attributes_exist(b5dc_proxy):
 @pytest.mark.parametrize("attr", attributes)
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_receives_archive_event(b5dc_proxy, event_store, attr):
+def test_client_receives_archive_event(b5dc_proxy: Any, event_store: Any, attr: Any) -> None:
     """Verify archive events are configured."""
     b5dc_proxy.subscribe_event(
         attr,
@@ -43,7 +45,7 @@ def test_client_receives_archive_event(b5dc_proxy, event_store, attr):
 @pytest.mark.parametrize("attr", attributes)
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_receives_change_event(b5dc_proxy, event_store, attr):
+def test_client_receives_change_event(b5dc_proxy: Any, event_store: Any, attr: Any) -> None:
     """Verify change events are configured."""
     b5dc_proxy.subscribe_event(
         attr,

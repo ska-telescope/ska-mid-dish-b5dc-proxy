@@ -1,5 +1,6 @@
 """General utils for test devices."""
 import queue
+from typing import Any
 
 import tango
 
@@ -9,9 +10,9 @@ class EventStore:
 
     def __init__(self) -> None:
         """Init Store."""
-        self._queue = queue.Queue()
+        self._queue: Any = queue.Queue()
 
-    def push_event(self, event: tango.EventData):
+    def push_event(self, event: tango.EventData) -> None:
         """Store the event.
 
         :param event: Tango event
@@ -19,12 +20,12 @@ class EventStore:
         """
         self._queue.put(event)
 
-    def clear_queue(self):
+    def clear_queue(self) -> None:
         """Clear out the queue."""
         while not self._queue.empty():
             self._queue.get()
 
-    def get_queue_events(self, timeout: int = 3):
+    def get_queue_events(self, timeout: int = 3) -> Any:
         """Get all the events out of the queue."""
         items = []
         try:
@@ -33,7 +34,7 @@ class EventStore:
         except queue.Empty:
             return items
 
-    def get_queue_values(self, timeout: int = 3):
+    def get_queue_values(self, timeout: int = 3) -> Any:
         """Get the values from the queue."""
         items = []
         try:

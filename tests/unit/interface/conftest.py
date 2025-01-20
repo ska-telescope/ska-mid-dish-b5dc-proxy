@@ -1,5 +1,6 @@
 """Contains pytest fixtures for tango unit tests setup."""
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -10,7 +11,7 @@ from tests.utils import EventStore
 
 
 @pytest.fixture
-def b5dc_proxy():
+def b5dc_proxy() -> Any:
     """Create b5dc proxy."""
     with patch(("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceComponentManager.start_communicating")):
         tango_context = DeviceTestContext(B5dcProxy, process=True)
@@ -22,6 +23,6 @@ def b5dc_proxy():
 
 
 @pytest.fixture(scope="function")
-def event_store():
+def event_store() -> EventStore:
     """Fixture for storing events."""
     return EventStore()

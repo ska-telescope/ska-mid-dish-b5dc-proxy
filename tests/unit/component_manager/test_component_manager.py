@@ -1,6 +1,7 @@
 """Test b5dc component manager."""
 
 import time
+from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -10,7 +11,7 @@ from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 NUM_OF_ATTRIBUTES = 11
 
 
-def get_arguments_histogram(arg_list):
+def get_arguments_histogram(arg_list: Any) -> Any:
     """Create frequency counter of arguments."""
     args = [arg.args[0] for arg in arg_list]
     call_counts = {}
@@ -25,7 +26,7 @@ def get_arguments_histogram(arg_list):
 
 @pytest.mark.unit
 @pytest.mark.forked
-def test_b5dc_comms_thread_created(b5dc_cm_setup):
+def test_b5dc_comms_thread_created(b5dc_cm_setup: Any) -> None:
     """Verify b5dc thread created."""
     b5dc_cm, _, _ = b5dc_cm_setup
     assert b5dc_cm.loop_thread.is_alive()
@@ -33,7 +34,7 @@ def test_b5dc_comms_thread_created(b5dc_cm_setup):
 
 @pytest.mark.unit
 @pytest.mark.forked
-def test_b5dc_variable_polling_update(b5dc_cm_setup):
+def test_b5dc_variable_polling_update(b5dc_cm_setup: Any) -> None:
     """Verify variables are updated via polling."""
     _, update_sensor_mock, _ = b5dc_cm_setup
     assert update_sensor_mock.call_count == NUM_OF_ATTRIBUTES
@@ -41,7 +42,7 @@ def test_b5dc_variable_polling_update(b5dc_cm_setup):
 
 @pytest.mark.unit
 @pytest.mark.forked
-def test_b5dc_variable_sync_update(b5dc_cm_setup):
+def test_b5dc_variable_sync_update(b5dc_cm_setup: Any) -> None:
     """Verify variables can be updated synchronously."""
     b5dc_cm, update_sensor_mock, _ = b5dc_cm_setup
 
@@ -56,7 +57,7 @@ def test_b5dc_variable_sync_update(b5dc_cm_setup):
 
 @pytest.mark.unit
 @pytest.mark.forked
-def test_b5dc_polling_update_frequency():
+def test_b5dc_polling_update_frequency() -> None:
     """Verify polling update frequency."""
     update_period = 2
     wait_duration = 11
