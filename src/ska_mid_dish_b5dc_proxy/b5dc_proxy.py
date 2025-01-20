@@ -22,7 +22,7 @@ class B5dcProxy(SKAController):
     # -----------------
     # Device Properties
     # -----------------
-    DSCFqdn = device_property(dtype=str, default_value="127.0.0.1:10001")
+    B5dc_endpoint = device_property(dtype=str, default_value="127.0.0.1:10001")
     B5dc_sensor_update_period = device_property(dtype=str, default_value="10")
 
     class InitCommand(SKAController.InitCommand):
@@ -68,8 +68,8 @@ class B5dcProxy(SKAController):
 
         :return: The B5dc component manager
         """
-        B5dc_server_ip = self.DSCFqdn.split(":")[0]
-        B5dc_server_port = int(self.DSCFqdn.split(":")[1])
+        B5dc_server_ip = self.B5dc_endpoint.split(":")[0]
+        B5dc_server_port = int(self.B5dc_endpoint.split(":")[1])
         return B5dcDeviceComponentManager(
             B5dc_server_ip,
             B5dc_server_port,

@@ -22,7 +22,7 @@ server:
                 - name: "LoggingLevelDefault"
                   values:
                     - "5"
-                - name: "DSCFqdn"
+                - name: "B5dc_endpoint"
                   values:
                     {{- if eq (len $.Values.b5dcmanager.fqdns) 0 }}
                     - {{ printf "b5dc-server-simulator-%s-svc:10001" $dish_id }}
