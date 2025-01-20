@@ -1,5 +1,12 @@
-Welcome to ska-mid-dish-b5dc-proxy's documentation!
-===================================================
+=====================================
+Band 5 Downconverter Controller Proxy
+=====================================
+
+Description
+-----------
+
+This device exposes a tango interface to control and monitor the Band 5 Downconverter
+which implements a DCP server. Both constitute the Dish LMC devices.
 
 .. toctree::
    :maxdepth: 1
