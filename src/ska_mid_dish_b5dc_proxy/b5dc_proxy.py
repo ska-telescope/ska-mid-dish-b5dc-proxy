@@ -174,7 +174,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflets the RFCM RF in H Pol power in dBm from register value.",
+        doc="Reflects the RFCM RF in H Pol power in dBm from register value.",
     )
     def hPolRfPowerIn(self: "B5dcProxy") -> float:
         """Return the hPolRfPowerIn."""
