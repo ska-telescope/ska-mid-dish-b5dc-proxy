@@ -127,9 +127,7 @@ class B5dcProxy(SKAController):
     def rfcmFrequency(self: "B5dcProxy") -> float:
         """Reflect the PLL output frequency in GHz."""
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_frequency")
-        return self.component_manager.component_state.get(
-            "spi_rfcm_frequency", 0.0
-        )  # TODO: Add defaults on attr get
+        return self.component_manager.component_state.get("spi_rfcm_frequency", 0.0)
 
     @attribute(
         dtype=B5dcPllState,
@@ -176,7 +174,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflets the rf power in dBm from register value.",
+        doc="Reflects the rf power in dBm from register value.",
     )
     def hPolRfPowerIn(self: "B5dcProxy") -> float:
         """Return the hPolRfPowerIn."""
