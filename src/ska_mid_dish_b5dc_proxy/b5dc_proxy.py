@@ -45,8 +45,8 @@ class B5dcProxy(SKABaseDevice):
             self._device._component_state_attr_map = {
                 "spi_rfcm_frequency": "rfcmFrequency",
                 "spi_rfcm_pll_lock": "rfcmPllLock",
-                "spi_rfcm_h_attenuation": "rfcmHAttenutation",
-                "spi_rfcm_v_attenuation": "rfcmVAttenutation",
+                "spi_rfcm_h_attenuation": "rfcmHAttenuation",
+                "spi_rfcm_v_attenuation": "rfcmVAttenuation",
                 "spi_rfcm_photo_diode_ain0": "clkPhotodiodeCurrent",
                 "spi_rfcm_rf_in_h_ain1": "hPolRfPowerIn",
                 "spi_rfcm_rf_in_v_ain2": "vPolRfPowerIn",
@@ -148,7 +148,7 @@ class B5dcProxy(SKABaseDevice):
         dtype=float,
         access=AttrWriteType.READ,
     )
-    def rfcmHAttenutation(self: "B5dcProxy") -> float:
+    def rfcmHAttenuation(self: "B5dcProxy") -> float:
         """To be filled."""
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_h_attenuation"
@@ -159,7 +159,7 @@ class B5dcProxy(SKABaseDevice):
         dtype=float,
         access=AttrWriteType.READ,
     )
-    def rfcmVAttenutation(self: "B5dcProxy") -> float:
+    def rfcmVAttenuation(self: "B5dcProxy") -> float:
         """To be filled."""
         self.component_manager.sync_register_outside_event_loop(
             "spi_rfcm_v_attenuation"
