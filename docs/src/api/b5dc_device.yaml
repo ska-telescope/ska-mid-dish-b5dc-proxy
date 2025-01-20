@@ -315,7 +315,7 @@
       - name: hPolRfPowerIn
         data_format: SCALAR
         data_type: DevDouble
-        description: Reflets the RFCM RF in H Pol power in dBm from register value.
+        description: Reflects the RFCM RF in H Pol power in dBm from register value.
         disp_level: OPERATOR
         display_unit: No display unit
         format: "%6.2f"
