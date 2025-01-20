@@ -19,7 +19,9 @@ def b5dc_cm_setup():
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()
     ), patch.object(
         B5dcDeviceComponentManager, "_update_sensor_with_lock"
-    ) as update_sensor_mock:
+    ) as update_sensor_mock, patch.object(
+        B5dcDeviceComponentManager, "_update_component_state"
+    ) as update_component_state_mock:
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, Mock(), Mock())
 
         max_try = 5
@@ -31,4 +33,4 @@ def b5dc_cm_setup():
 
         assert iterations < max_try - 1, "Connection not established"
 
-        yield b5dc_cm, update_sensor_mock, b5dc_sensor_mock
+        yield b5dc_cm, [update_sensor_mock, b5dc_sensor_mock, update_component_state_mock]

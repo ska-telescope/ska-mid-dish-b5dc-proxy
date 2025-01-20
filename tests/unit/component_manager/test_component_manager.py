@@ -28,7 +28,7 @@ def get_arguments_histogram(arg_list: Any) -> Any:
 @pytest.mark.forked
 def test_b5dc_comms_thread_created(b5dc_cm_setup: Any) -> None:
     """Verify b5dc thread created."""
-    b5dc_cm, _, _ = b5dc_cm_setup
+    b5dc_cm, _ = b5dc_cm_setup
     assert b5dc_cm.loop_thread.is_alive()
 
 
@@ -36,7 +36,8 @@ def test_b5dc_comms_thread_created(b5dc_cm_setup: Any) -> None:
 @pytest.mark.forked
 def test_b5dc_variable_polling_update(b5dc_cm_setup: Any) -> None:
     """Verify variables are updated via polling."""
-    _, update_sensor_mock, _ = b5dc_cm_setup
+    _, mocks = b5dc_cm_setup
+    update_sensor_mock = mocks[0]
     assert update_sensor_mock.call_count == NUM_OF_ATTRIBUTES
 
 
@@ -44,7 +45,13 @@ def test_b5dc_variable_polling_update(b5dc_cm_setup: Any) -> None:
 @pytest.mark.forked
 def test_b5dc_variable_sync_update(b5dc_cm_setup: Any) -> None:
     """Verify variables can be updated synchronously."""
-    b5dc_cm, update_sensor_mock, _ = b5dc_cm_setup
+    b5dc_cm, mocks = b5dc_cm_setup
+    update_sensor_mock = mocks[0]
+    b5dc_sensor_mock = mocks[1]
+    update_component_state_mock = mocks[2]
+
+    mock_frequency_val = 11.1
+    b5dc_sensor_mock.return_value.rfcm_frequency = mock_frequency_val
 
     register_name = "spi_rfcm_frequency"
     b5dc_cm.sync_register_outside_event_loop(register_name)
@@ -53,6 +60,8 @@ def test_b5dc_variable_sync_update(b5dc_cm_setup: Any) -> None:
 
     # 1 additional call for the initial periodic update
     assert call_counts[register_name] == 2
+    # check that the last call to update component state has expected args
+    assert update_component_state_mock.call_args.kwargs == {register_name: mock_frequency_val}
 
 
 @pytest.mark.unit
