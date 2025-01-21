@@ -144,7 +144,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the RFCM H polarization attenuation value in dB from register value.",
+        doc="Reflects the RFCM H-polarization attenuation value in dB.",
     )
     def rfcmHAttenuation(self: "B5dcProxy") -> float:
         """Return the rfcmHAttenuation."""
@@ -154,7 +154,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the RFCM V polarization attenuation value in dB from register value.",
+        doc="Reflects the RFCM V-polarization attenuation value in dB.",
     )
     def rfcmVAttenuation(self: "B5dcProxy") -> float:
         """Return the rfcmVAttenuation."""
@@ -164,7 +164,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the photodiode current in mA from register value.",
+        doc="Reflects the photodiode current in mA.",
     )
     def clkPhotodiodeCurrent(self: "B5dcProxy") -> float:
         """Return the photo diode current."""
@@ -174,7 +174,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the RFCM RF in H Pol power in dBm from register value.",
+        doc="Reflects the RFCM RF power input for horizonal polarization in dBm.",
     )
     def hPolRfPowerIn(self: "B5dcProxy") -> float:
         """Return the hPolRfPowerIn."""
@@ -184,7 +184,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the RFCM RF in V Pol power in dBm from register value.",
+        doc="Reflects the RFCM RF power input for vertical polarization in dBm.",
     )
     def vPolRfPowerIn(self: "B5dcProxy") -> float:
         """Return the vPolRfPowerIn."""
@@ -194,7 +194,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the RFCM IF out H Pol power in dBm from register value.",
+        doc="Reflects the RFCM RF power output for horizonal polarization in dBm.",
     )
     def hPolRfPowerOut(self: "B5dcProxy") -> float:
         """Return the hPolRfPowerOut."""
@@ -204,7 +204,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the RFCM IF out V Pol power in dBm from register value.",
+        doc="Reflects the RFCM RF power output for vertical polarization in dBm.",
     )
     def vPolRfPowerOut(self: "B5dcProxy") -> float:
         """Return the vPolRfPowerOut sensor value."""
@@ -214,7 +214,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects the RFCM RF PCB temperature in deg C from register value.",
+        doc="Reflects the RFCM RF PCB temperature in deg C.",
     )
     def rfTemperature(self: "B5dcProxy") -> float:
         """Return the of the RFCM RF PCB in deg."""
@@ -224,7 +224,7 @@ class B5dcProxy(SKAController):
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
-        doc="Reflects RFCM PSU PCB temperature in deg C from register value.",
+        doc="Reflects RFCM PSU PCB temperature in deg C.",
     )
     def rfcmPsuPcbTemperature(self: "B5dcProxy") -> float:
         """Return the temperature of the RFCM PSU PCB in deg."""
