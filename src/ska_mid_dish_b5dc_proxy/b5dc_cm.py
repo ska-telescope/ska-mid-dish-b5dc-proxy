@@ -5,10 +5,17 @@
 import asyncio
 import logging
 import threading
-from typing import Any
+from typing import Any, Callable, Optional, Tuple
 
-from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDeviceSensors
-from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcPllState
+from ska_control_model import TaskStatus
+from ska_mid_dish_dcp_lib.device.b5dc_device import (
+    B5dcDeviceAttenuationException,
+    B5dcDeviceConfigureAttenuation,
+    B5dcDeviceConfigureFrequency,
+    B5dcDeviceFrequencyException,
+    B5dcDeviceSensors,
+)
+from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
 from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPropertyParser
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol
 from ska_tango_base.executor import TaskExecutorComponentManager
@@ -113,6 +120,16 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             )
             self._b5dc_device_sensors = B5dcDeviceSensors(self._logger, self._b5dc_interface)
 
+            # TODO: It may be tricky to configure these here because if they dont
+            # exist yet and a client attempts to call the command
+            # an exception will be thrown
+            self._b5dc_device_attn_conf = B5dcDeviceConfigureAttenuation(
+                self._logger, self._b5dc_interface
+            )
+            self._b5dc_device_freq_conf = B5dcDeviceConfigureFrequency(
+                self._logger, self._b5dc_interface
+            )
+
             # Sync component state to sensor values on connection start before
             # setting polling loop
             self._con_established.set()
@@ -207,3 +224,113 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     def is_connection_established(self) -> bool:
         """Return if connection is established."""
         return self._con_established.is_set()
+
+    # TODO: Remove divider > Command handling functions down here ++++++++++
+    def set_attenuation(
+        self,
+        attenuation_db: int,
+        attn_reg_name: str,
+        task_abort_event: Any,
+        task_callback: Optional[Callable] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """Set the attenuation on the band 5 down converter."""
+        status, response = self.submit_task(
+            self._set_attenuation,
+            args=[attenuation_db, attn_reg_name],
+            task_callback=task_callback,
+        )
+        return status, response
+
+    def _set_attenuation(
+        self,
+        attenuation_db: int,
+        attn_reg_name: str,
+        task_abort_event: Any,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
+        """Set the attenuation on the band 5 down converter."""
+        self._logger.info(
+            f"Called SetAttenuation with args (attenuation_db={attenuation_db}, "
+            f"attn_reg_name={attn_reg_name})"
+        )
+
+        if task_callback:
+            task_callback(status=TaskStatus.IN_PROGRESS)
+
+        try:
+            asyncio.run(self._b5dc_device_attn_conf.set_attenuation(attenuation_db, attn_reg_name))
+        except B5dcDeviceAttenuationException as ex:
+            self._logger.error(
+                f"An error occured on setting the B5dc attenuation on {attn_reg_name}: {ex}"
+            )
+            if task_callback:
+                task_callback(
+                    status=TaskStatus.FAILED,
+                    result=f"An error occured on setting the B5dc attenuation "
+                    f"on {attn_reg_name}: {ex}",
+                )
+            return
+
+        if task_callback:
+            task_callback(
+                status=TaskStatus.COMPLETED,
+                result="SetAttenuation completed",
+            )
+
+    def set_frequency(
+        self,
+        frequency: B5dcFrequency,
+        task_callback: Optional[Callable] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """Set the frequency on the band 5 down converter."""
+        # TODO: It might work better to enforce that the
+        # enum is supplied at the command interface level
+        try:
+            freq_enum = B5dcFrequency(frequency)
+        except ValueError as ex:
+            self._logger.error(
+                f"Invalid frequency value supplied. " f"The following exception was raised: {ex}"
+            )
+            return (
+                TaskStatus.REJECTED,
+                f"Invalid frequency value supplied: {frequency}. Expected "
+                f"B5dcFrequency enum value (ie: B5dcFrequency.F_11_1_GHZ(1), "
+                f"B5dcFrequency.F_13_2_GHZ(2) or B5dcFrequency.F_13_86_GHZ(3))",
+            )
+
+        status, response = self.submit_task(
+            self._set_frequency,
+            args=[freq_enum],
+            task_callback=task_callback,
+        )
+        return status, response
+
+    def _set_frequency(
+        self,
+        frequency: B5dcFrequency,
+        task_abort_event: Any,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
+        """Set the frequency on the band 5 down converter."""
+        self._logger.info(f"Called SetFrequency with arg (frequency={frequency})")
+
+        if task_callback:
+            task_callback(status=TaskStatus.IN_PROGRESS)
+
+        try:
+            # TODO: Can this async method be run in the already existing event loop?
+            asyncio.run(self._b5dc_device_freq_conf.set_frequency(frequency))
+        except B5dcDeviceFrequencyException as ex:
+            self._logger.error(f"An error occured on setting the B5dc frequency: {ex}")
+            if task_callback:
+                task_callback(
+                    status=TaskStatus.FAILED,
+                    result=f"An error occured on setting the B5dc frequency: {ex}",
+                )
+            return
+
+        if task_callback:
+            task_callback(
+                status=TaskStatus.COMPLETED,
+                result="SetFrequency completed",
+            )
