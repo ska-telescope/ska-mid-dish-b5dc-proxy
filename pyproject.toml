@@ -14,6 +14,10 @@ name = 'skao'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 
 [[tool.poetry.source]]
+name = 'gitlab'
+url = 'https://gitlab.com/api/v4/projects/62488550/packages/pypi/simple'
+
+[[tool.poetry.source]]
 name = "PyPI-public"
 url = 'https://pypi.org/simple'
 
@@ -22,7 +26,7 @@ python = "~3.10"
 pytango = "9.5.0"
 ska-tango-base = "1.0.0"
 numpy = "1.26.2"
-ska-mid-dish-dcp-lib = "0.0.1"
+ska-mid-dish-dcp-lib = "0.0.1+dev.c2906898d"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
