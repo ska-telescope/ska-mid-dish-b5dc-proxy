@@ -238,13 +238,26 @@ class B5dcProxy(SKAController):
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
     )
-    def SetAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
-        """Set the attenuation on the band 5 down converter.
+    def SetHPolAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
+        """Set the horizontal polarization attenuation on the band 5 down converter.
 
         :param attenuation_db: value to set in dB
         """
         handler = self.get_command_object("SetAttenuation")
-        result_code, unique_id = handler(attenuation_db)
+        result_code, unique_id = handler(attenuation_db, "spi_rfcm_h_attenuation")
+        return [result_code], [unique_id]
+
+    @command(
+        dtype_in=int,
+        dtype_out="DevVarLongStringArray",
+    )
+    def SetVPolAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
+        """Set the vertical polarization attenuation on the band 5 down converter.
+
+        :param attenuation_db: value to set in dB
+        """
+        handler = self.get_command_object("SetAttenuation")
+        result_code, unique_id = handler(attenuation_db, "spi_rfcm_v_attenuation")
         return [result_code], [unique_id]
 
     @command(
