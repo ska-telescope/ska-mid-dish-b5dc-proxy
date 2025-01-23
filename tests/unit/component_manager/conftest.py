@@ -7,6 +7,15 @@ import pytest
 
 from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 
+B5DC_VER_TEST = "B5dc version 123"
+B5DC_COMM_VER_TEST = "B5dc comms 123"
+B5DC_RF_PSU_VER_TEST = "B5dc rfcm psu 123"
+B5DC_RF_PCB_VER_TEST = "B5dc rfcm pcb 123"
+B5DC_BACKPLANE_VER_TEST = "B5dc backplane 123"
+B5DC_PSU_VER_TEST = "B5dc psu 123"
+B5DC_ICD_VER_TEST = "B5dc icd 123"
+B5DC_FW_VER_TEST = "123"
+
 
 @pytest.fixture
 def b5dc_cm_setup():
@@ -17,11 +26,27 @@ def b5dc_cm_setup():
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceSensors", Mock()
     ) as b5dc_sensor_mock, patch(
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()
-    ), patch.object(
+    ), patch(
+        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcIicDevice", Mock()
+    ), patch(
+        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcFpgaFirmware", Mock()
+    ) as b5dc_fw_mock, patch(
+        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPhysicalConfiguration", Mock()
+    ) as b5dc_pca_mock, patch.object(
         B5dcDeviceComponentManager, "_update_sensor_with_lock"
-    ) as update_sensor_mock, patch.object(
-        B5dcDeviceComponentManager, "_update_component_state"
-    ) as update_component_state_mock:
+    ) as update_sensor_mock:
+        b5dc_pca_mock.return_value.update_pca_info = AsyncMock()
+        b5dc_pca_mock.return_value.b5dc_version = B5DC_VER_TEST
+        b5dc_pca_mock.return_value.b5dc_comms_engine_version = B5DC_COMM_VER_TEST
+        b5dc_pca_mock.return_value.b5dc_rfcm_psu_version = B5DC_RF_PSU_VER_TEST
+        b5dc_pca_mock.return_value.b5dc_rfcm_pcb_version = B5DC_RF_PCB_VER_TEST
+        b5dc_pca_mock.return_value.b5dc_backplane_version = B5DC_BACKPLANE_VER_TEST
+        b5dc_pca_mock.return_value.b5dc_psu_version = B5DC_PSU_VER_TEST
+        b5dc_pca_mock.return_value.b5dc_icd_version = B5DC_ICD_VER_TEST
+
+        b5dc_fw_mock.return_value.get_firmware_build_version = AsyncMock()
+        b5dc_fw_mock.return_value.b5dc_build_time = B5DC_FW_VER_TEST
+
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, Mock(), Mock())
 
         max_try = 5
@@ -33,4 +58,4 @@ def b5dc_cm_setup():
 
         assert iterations < max_try - 1, "Connection not established"
 
-        yield b5dc_cm, [update_sensor_mock, b5dc_sensor_mock, update_component_state_mock]
+        yield b5dc_cm, [update_sensor_mock, b5dc_sensor_mock]

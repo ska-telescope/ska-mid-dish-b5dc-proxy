@@ -9,7 +9,11 @@ from typing import Any
 
 from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDeviceSensors
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcPllState
-from ska_mid_dish_dcp_lib.device.b5dc_pca import B5dcIicDevice, B5dcPhysicalConfiguration
+from ska_mid_dish_dcp_lib.device.b5dc_pca import (
+    B5dcFpgaFirmware,
+    B5dcIicDevice,
+    B5dcPhysicalConfiguration,
+)
 from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPropertyParser
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol
 from ska_tango_base.executor import TaskExecutorComponentManager
@@ -46,6 +50,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._protocol = None
         self._b5dc_iic: B5dcIicDevice = None
         self._b5dc_pca: B5dcPhysicalConfiguration = None
+        self._b5dc_fw: B5dcFpgaFirmware = None
 
         self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
@@ -116,7 +121,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 set_method=self._protocol.sync_write_register,
             )
             self._b5dc_device_sensors = B5dcDeviceSensors(self._logger, self._b5dc_interface)
-            self._b5dc_iic = B5dcIicDevice(self._logger, self._protocol)
+            self._b5dc_iic = B5dcIicDevice(self._protocol)
+            self._b5dc_fw = B5dcFpgaFirmware(self._logger, self._protocol)
             self._b5dc_pca = B5dcPhysicalConfiguration(self._logger, self._b5dc_iic)
             await self._update_build_state()
 
@@ -212,7 +218,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         super()._update_component_state(**kwargs)
 
     async def _update_build_state(self) -> None:
-        if self._b5dc_pca is not None:
+        if self._b5dc_pca is not None and self._b5dc_fw is not None:
             await self._b5dc_pca.update_pca_info()
             build_state = self._b5dc_pca.b5dc_version + "\r"
             build_state += self._b5dc_pca.b5dc_comms_engine_version + "\r"
@@ -220,8 +226,15 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             build_state += self._b5dc_pca.b5dc_rfcm_pcb_version + "\r"
             build_state += self._b5dc_pca.b5dc_backplane_version + "\r"
             build_state += self._b5dc_pca.b5dc_psu_version + "\r"
+
+            await self._b5dc_fw.get_firmware_build_version()
+            build_state += self._b5dc_fw.b5dc_build_time + "\r"
+
             build_state += "B5DC ICD version: " + self._b5dc_pca.b5dc_icd_version
             self._update_component_state(buildstate=build_state)
+            self._logger.debug("Build state updated: [%s]", build_state)
+        else:
+            self._logger.warning("Build state was not updated.")
 
     def is_connection_established(self) -> bool:
         """Return if connection is established."""

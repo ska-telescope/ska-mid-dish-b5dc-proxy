@@ -1653,14 +1653,14 @@ reference = "skao"
 
 [[package]]
 name = "ska-mid-dish-dcp-lib"
-version = "0.0.1+dev.c2906898d"
+version = "0.0.1+dev.c1cf10535"
 description = "Band 5 down-converter communication library"
 optional = false
 python-versions = ">=3.10,<4.0"
 groups = ["main"]
 files = [
-    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c2906898d-py3-none-any.whl", hash = "sha256:3485c73d67c65d5e2a783e9af9dba4a6319b80525d58709602d1aa677811d868"},
-    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c2906898d.tar.gz", hash = "sha256:5aada09584eb8eef423659f16abf020b6e45754eb6d0e40a565c2cada8295bea"},
+    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c1cf10535-py3-none-any.whl", hash = "sha256:50e53769430e272b4505aa47b981aa6297a8813a28717e05b8756e58de547383"},
+    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c1cf10535.tar.gz", hash = "sha256:3f9347c4f04efdafb766036928fc06a41d33084b181dbb49eb58492efcc0d71f"},
 ]
 
 [package.dependencies]
@@ -2250,4 +2250,4 @@ reference = "gitlab"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.10"
-content-hash = "ec3b4f9ae40854b71dc2d08744ac482455c71998a87761a58f01f1885694e819"
+content-hash = "bc4eb28d7795005da00ec8841aaa934cdd8c9fe425aa643adcd3a8424691b935"
