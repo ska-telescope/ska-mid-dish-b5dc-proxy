@@ -51,7 +51,12 @@ CI_REGISTRY ?= registry.gitlab.com
 
 # Use the previously built image when running in the pipeline
 ifneq ($(CI_JOB_ID),)
-CUSTOM_VALUES = --set ska-tango-base.enabled=true \
+CUSTOM_VALUES = --set b5dcmanager.image.image=$(NAME) \
+	--set b5dcmanager.image.registry=$(CI_REGISTRY)/ska-telescope/$(NAME) \
+	--set b5dcmanager.image.tag=$(OCI_TAG) \
+	--set ska-mid-dish-dcp-lib.enabled=true  \
+	--set ska-mid-dish-dcp-lib.b5dcSimulator.enabled=true \
+	--set ska-tango-base.enabled=true \
 	--set global.dishes="{001,111}"
 K8S_TEST_IMAGE_TO_TEST=$(CI_REGISTRY)/ska-telescope/$(NAME)/$(NAME):$(OCI_TAG)
 K8S_TIMEOUT=600s
