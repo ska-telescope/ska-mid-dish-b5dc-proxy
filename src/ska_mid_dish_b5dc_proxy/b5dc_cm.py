@@ -226,6 +226,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         return self._con_established.is_set()
 
     # TODO: Remove divider > Command handling functions down here ++++++++++
+    # pylint: disable=unused-argument
     def set_attenuation(
         self,
         attenuation_db: int,
@@ -241,6 +242,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
         return status, response
 
+    # pylint: disable=unused-argument
     def _set_attenuation(
         self,
         attenuation_db: int,
@@ -277,14 +279,14 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 result="SetAttenuation completed",
             )
 
+    # pylint: disable=unused-argument
     def set_frequency(
         self,
         frequency: B5dcFrequency,
+        task_abort_event: Any,
         task_callback: Optional[Callable] = None,
     ) -> Tuple[TaskStatus, str]:
         """Set the frequency on the band 5 down converter."""
-        # TODO: It might work better to enforce that the
-        # enum is supplied at the command interface level
         try:
             freq_enum = B5dcFrequency(frequency)
         except ValueError as ex:
@@ -305,6 +307,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
         return status, response
 
+    # pylint: disable=unused-argument
     def _set_frequency(
         self,
         frequency: B5dcFrequency,
