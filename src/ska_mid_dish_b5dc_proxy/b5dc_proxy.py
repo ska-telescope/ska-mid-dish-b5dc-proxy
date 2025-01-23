@@ -237,6 +237,10 @@ class B5dcProxy(SKAController):
     @command(
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
+        doc_in="""Set the horizontal polarization attenuation on the band 5 down converter.
+
+        :param attenuation_db: value to set in dB
+        """,
     )
     def SetHPolAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
         """Set the horizontal polarization attenuation on the band 5 down converter.
