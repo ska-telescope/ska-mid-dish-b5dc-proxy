@@ -12,7 +12,8 @@ which implements a DCP server. Both constitute the Dish LMC devices.
    :maxdepth: 1
    :caption: Contents:
 
-   api/index
+   API<api/index>
+   CHANGELOG<CHANGELOG>
 
 
 Indices and tables
