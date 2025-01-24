@@ -1,5 +1,6 @@
 """Test b5dc component manager."""
 
+import json
 import time
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
@@ -7,10 +8,12 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
+from ska_mid_dish_b5dc_proxy.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
 
 from .conftest import (
     B5DC_BACKPLANE_VER_TEST,
     B5DC_COMM_VER_TEST,
+    B5DC_DEVICE_IP,
     B5DC_FW_VER_TEST,
     B5DC_ICD_VER_TEST,
     B5DC_MDL_NAME_TEST,
@@ -50,17 +53,43 @@ def test_b5dc_build_state_populated(b5dc_cm_setup: Any) -> None:
     """Verify b5dc build state populated."""
     b5dc_cm, _ = b5dc_cm_setup
 
-    expected_build_state = B5DC_VER_TEST + "\r"
-    expected_build_state += B5DC_COMM_VER_TEST + "\r"
-    expected_build_state += B5DC_RF_PSU_VER_TEST + "\r"
-    expected_build_state += B5DC_RF_PCB_VER_TEST + "\r"
-    expected_build_state += B5DC_BACKPLANE_VER_TEST + "\r"
-    expected_build_state += B5DC_PSU_VER_TEST + "\r"
-    expected_build_state += "FPGA firmware file: "
-    expected_build_state += f"{B5DC_MDL_NAME_TEST}_{B5DC_FW_VER_TEST}.fpg\r"
-    expected_build_state += "B5DC ICD version: " + B5DC_ICD_VER_TEST
+    expected_firmware_file = f"{B5DC_MDL_NAME_TEST}_{B5DC_FW_VER_TEST}.fpg"
+    build_state_json = json.loads(b5dc_cm.component_state["buildstate"])
 
-    assert b5dc_cm.component_state["buildstate"] == expected_build_state
+    assert build_state_json["device"] == B5DC_BUILD_STATE_DEVICE_NAME
+    assert build_state_json["device"] == B5DC_BUILD_STATE_DEVICE_NAME
+    assert build_state_json["device_ip"] == B5DC_DEVICE_IP
+    assert build_state_json["device_version"] == B5DC_VER_TEST
+    assert build_state_json["comms_engine_version"] == B5DC_COMM_VER_TEST
+    assert build_state_json["rfcm_psu_version"] == B5DC_RF_PSU_VER_TEST
+    assert build_state_json["rfcm_pcb_version"] == B5DC_RF_PCB_VER_TEST
+    assert build_state_json["backplane_version"] == B5DC_BACKPLANE_VER_TEST
+    assert build_state_json["psu_version"] == B5DC_PSU_VER_TEST
+    assert build_state_json["icd_version"] == B5DC_ICD_VER_TEST
+    assert build_state_json["fpga_firmware_file"] == expected_firmware_file
+
+
+@pytest.mark.unit
+@pytest.mark.forked
+def test_b5dc_build_state_default(b5dc_cm_with_comms_failed: Any) -> None:
+    """Verify b5dc build state updated if comms failed."""
+    b5dc_cm, _ = b5dc_cm_with_comms_failed
+
+    build_state_json = json.loads(b5dc_cm.component_state["buildstate"])
+
+    assert build_state_json["device"] == B5DC_BUILD_STATE_DEVICE_NAME
+    assert (
+        build_state_json["device_ip"]
+        == "Failed to retrieve build state data for band 5 down converter."
+    )
+    assert build_state_json["device_version"] == ""
+    assert build_state_json["comms_engine_version"] == ""
+    assert build_state_json["rfcm_psu_version"] == ""
+    assert build_state_json["rfcm_pcb_version"] == ""
+    assert build_state_json["backplane_version"] == ""
+    assert build_state_json["psu_version"] == ""
+    assert build_state_json["icd_version"] == ""
+    assert build_state_json["fpga_firmware_file"] == ""
 
 
 @pytest.mark.unit
