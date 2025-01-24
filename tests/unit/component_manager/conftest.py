@@ -15,6 +15,7 @@ B5DC_BACKPLANE_VER_TEST = "B5dc backplane 123"
 B5DC_PSU_VER_TEST = "B5dc psu 123"
 B5DC_ICD_VER_TEST = "B5dc icd 123"
 B5DC_FW_VER_TEST = "123"
+B5DC_MDL_NAME_TEST = "fpga_model_name"
 
 
 @pytest.fixture
@@ -44,8 +45,11 @@ def b5dc_cm_setup():
         b5dc_pca_mock.return_value.b5dc_psu_version = B5DC_PSU_VER_TEST
         b5dc_pca_mock.return_value.b5dc_icd_version = B5DC_ICD_VER_TEST
 
-        b5dc_fw_mock.return_value.get_firmware_build_version = AsyncMock()
+        b5dc_fw_mock.return_value.update_firmware_build_timestamp = AsyncMock()
         b5dc_fw_mock.return_value.b5dc_build_time = B5DC_FW_VER_TEST
+
+        b5dc_fw_mock.return_value.update_model_filename = AsyncMock()
+        b5dc_fw_mock.return_value.b5dc_file_model_name = B5DC_MDL_NAME_TEST
 
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, Mock(), Mock())
 

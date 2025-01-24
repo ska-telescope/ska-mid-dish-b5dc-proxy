@@ -13,6 +13,7 @@ from .conftest import (
     B5DC_COMM_VER_TEST,
     B5DC_FW_VER_TEST,
     B5DC_ICD_VER_TEST,
+    B5DC_MDL_NAME_TEST,
     B5DC_PSU_VER_TEST,
     B5DC_RF_PCB_VER_TEST,
     B5DC_RF_PSU_VER_TEST,
@@ -55,7 +56,8 @@ def test_b5dc_build_state_populated(b5dc_cm_setup: Any) -> None:
     expected_build_state += B5DC_RF_PCB_VER_TEST + "\r"
     expected_build_state += B5DC_BACKPLANE_VER_TEST + "\r"
     expected_build_state += B5DC_PSU_VER_TEST + "\r"
-    expected_build_state += B5DC_FW_VER_TEST + "\r"
+    expected_build_state += "FPGA firmware file: "
+    expected_build_state += f"{B5DC_MDL_NAME_TEST}_{B5DC_FW_VER_TEST}.fpg\r"
     expected_build_state += "B5DC ICD version: " + B5DC_ICD_VER_TEST
 
     assert b5dc_cm.component_state["buildstate"] == expected_build_state

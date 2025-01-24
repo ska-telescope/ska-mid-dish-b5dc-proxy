@@ -227,8 +227,13 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             build_state += self._b5dc_pca.b5dc_backplane_version + "\r"
             build_state += self._b5dc_pca.b5dc_psu_version + "\r"
 
-            await self._b5dc_fw.get_firmware_build_version()
-            build_state += self._b5dc_fw.b5dc_build_time + "\r"
+            await self._b5dc_fw.update_model_filename()
+            await self._b5dc_fw.update_firmware_build_timestamp()
+
+            build_state += "FPGA firmware file: "
+            build_state += (
+                f"{self._b5dc_fw.b5dc_file_model_name}_{self._b5dc_fw.b5dc_build_time}.fpg\r"
+            )
 
             build_state += "B5DC ICD version: " + self._b5dc_pca.b5dc_icd_version
             self._update_component_state(buildstate=build_state)
