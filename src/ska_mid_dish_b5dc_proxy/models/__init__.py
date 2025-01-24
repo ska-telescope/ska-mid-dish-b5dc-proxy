@@ -1,2 +1,1 @@
 """Package that contains models."""
-

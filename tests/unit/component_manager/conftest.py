@@ -1,6 +1,7 @@
 """Contains pytest fixtures for tango unit tests setup."""
 
 import time
+from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -20,7 +21,7 @@ B5DC_MDL_NAME_TEST = "fpga_model_name"
 
 
 @pytest.fixture(scope="function")
-def b5dc_cm_setup():
+def b5dc_cm_setup() -> Any:
     """Create component manager for testing."""
     with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
@@ -67,7 +68,7 @@ def b5dc_cm_setup():
 
 
 @pytest.fixture(scope="function")
-def b5dc_cm_with_comms_failed():
+def b5dc_cm_with_comms_failed() -> Any:
     """Create component manager for testing where the comms to b5dc failed."""
     with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
