@@ -3,15 +3,25 @@
 # pylint: disable=abstract-method,too-many-instance-attributes
 
 import asyncio
+import dataclasses
+import json
 import logging
 import threading
 from typing import Any
 
 from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDeviceSensors
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcPllState
+from ska_mid_dish_dcp_lib.device.b5dc_pca import (
+    B5dcFpgaFirmware,
+    B5dcIicDevice,
+    B5dcPhysicalConfiguration,
+)
 from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPropertyParser
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol
 from ska_tango_base.executor import TaskExecutorComponentManager
+
+from ska_mid_dish_b5dc_proxy.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
+from ska_mid_dish_b5dc_proxy.models.data_classes import B5dcBuildStateDataclass
 
 
 class B5dcDeviceComponentManager(TaskExecutorComponentManager):
@@ -43,6 +53,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self.loop = None
         self._transport = None
         self._protocol = None
+        self._b5dc_iic: B5dcIicDevice = None
+        self._b5dc_pca: B5dcPhysicalConfiguration = None
+        self._b5dc_fw: B5dcFpgaFirmware = None
 
         self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
@@ -72,6 +85,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             spi_rfcm_if_out_v_ain4=0.0,
             spi_rfcm_rf_temp_ain5=0.0,
             spi_rfcm_psu_pcb_temp_ain7=0.0,
+            buildstate="",
             **kwargs,
         )
 
@@ -112,6 +126,10 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 set_method=self._protocol.sync_write_register,
             )
             self._b5dc_device_sensors = B5dcDeviceSensors(self._logger, self._b5dc_interface)
+            self._b5dc_iic = B5dcIicDevice(self._protocol)
+            self._b5dc_fw = B5dcFpgaFirmware(self._logger, self._protocol)
+            self._b5dc_pca = B5dcPhysicalConfiguration(self._logger, self._b5dc_iic)
+            await self._update_build_state()
 
             # Sync component state to sensor values on connection start before
             # setting polling loop
@@ -203,6 +221,39 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         """Log and update new component state."""
         self._logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(**kwargs)
+
+    async def _update_build_state(self) -> None:
+        if self._b5dc_pca is not None and self._b5dc_fw is not None:
+            await self._b5dc_pca.update_pca_info()
+            await self._b5dc_fw.update_model_filename()
+            await self._b5dc_fw.update_firmware_build_timestamp()
+
+            firmware_file = (
+                f"{self._b5dc_fw.b5dc_file_model_name}_{self._b5dc_fw.b5dc_build_time}.fpg"
+            )
+
+            b5dc_build_state = B5dcBuildStateDataclass(
+                device=B5DC_BUILD_STATE_DEVICE_NAME,
+                device_ip=self._server_addr[0],
+                device_version=self._b5dc_pca.b5dc_version,
+                comms_engine_version=self._b5dc_pca.b5dc_comms_engine_version,
+                rfcm_psu_version=self._b5dc_pca.b5dc_rfcm_psu_version,
+                rfcm_pcb_version=self._b5dc_pca.b5dc_rfcm_pcb_version,
+                backplane_version=self._b5dc_pca.b5dc_backplane_version,
+                psu_version=self._b5dc_pca.b5dc_psu_version,
+                icd_version=self._b5dc_pca.b5dc_icd_version,
+                fpga_firmware_file=firmware_file,
+            )
+        else:
+            b5dc_build_state = B5dcBuildStateDataclass(
+                device=B5DC_BUILD_STATE_DEVICE_NAME,
+                device_ip="Failed to retrieve build state data for band 5 down converter.",
+            )
+            self._logger.warning("Build state was not updated successfully.")
+
+        b5dc_build_state_json = json.dumps(dataclasses.asdict(b5dc_build_state), indent=4)
+        self._logger.debug("Build state updated: [%s]", b5dc_build_state_json)
+        self._update_component_state(buildstate=b5dc_build_state_json)
 
     def is_connection_established(self) -> bool:
         """Return if connection is established."""
