@@ -14,10 +14,6 @@ name = 'skao'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 
 [[tool.poetry.source]]
-name = 'gitlab'
-url = 'https://gitlab.com/api/v4/projects/62488550/packages/pypi/simple'
-
-[[tool.poetry.source]]
 name = "PyPI-public"
 url = 'https://pypi.org/simple'
 
