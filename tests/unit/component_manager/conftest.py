@@ -34,3 +34,13 @@ def b5dc_cm_setup():
         assert iterations < max_try - 1, "Connection not established"
 
         yield b5dc_cm, [update_sensor_mock, b5dc_sensor_mock, update_component_state_mock]
+
+
+@pytest.fixture()
+def callbacks() -> dict:
+    """Return a dictionary of callbacks."""
+    return {
+        "comm_state_cb": Mock(),
+        "comp_state_cb": Mock(),
+        "task_cb": Mock(),
+    }
