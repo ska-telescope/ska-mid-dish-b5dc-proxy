@@ -60,7 +60,7 @@ def test_b5dc_set_frequency_rejects_invalid_freq() -> None:
 def test_b5dc_set_frequency_method_with_valid_input(
     frequency_to_set: B5dcFrequency, callbacks: dict
 ) -> None:
-    """Verify SetFrequency returns TaskStatus.REJECTED for invalid freq. arg."""
+    """Verify SetFrequency returns expected LRC updates on supplying valid input."""
     update_period = 2
     with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
@@ -113,7 +113,7 @@ def test_b5dc_set_frequency_method_with_valid_input(
 @pytest.mark.unit
 @pytest.mark.forked
 def test_b5dc_set_attenuation_with_valid_input(callbacks: dict) -> None:
-    """To be filled"""
+    """Verify SetAttenuation returns expected LRC updates on supplying valid input."""
     update_period = 2
     with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
@@ -131,7 +131,7 @@ def test_b5dc_set_attenuation_with_valid_input(callbacks: dict) -> None:
 
     assert iterations < max_try - 1, "Connection not established"
 
-    # Set the frequency and verify that expected lrc updates are published
+    # Set the attenuation and verify that expected lrc updates are published
     b5dc_cm.set_attenuation(
         ATTENUATION_DB_IN_RANGE,
         "spi_rfcm_v_attenuation",
@@ -143,12 +143,14 @@ def test_b5dc_set_attenuation_with_valid_input(callbacks: dict) -> None:
         {"status": TaskStatus.QUEUED},
         {
             "status": TaskStatus.IN_PROGRESS,
-            "progress": f"Called SetAttenuation with args (attenuation_db={ATTENUATION_DB_IN_RANGE}, "
-            f"attn_reg_name=spi_rfcm_v_attenuation)",
+            "progress": "Called SetAttenuation with args "
+            f"(attenuation_db={ATTENUATION_DB_IN_RANGE}, "
+            "attn_reg_name=spi_rfcm_v_attenuation)",
         },
         {
             "status": TaskStatus.COMPLETED,
-            "result": f"SetAttenuation({ATTENUATION_DB_IN_RANGE}, spi_rfcm_v_attenuation) completed",
+            "result": f"SetAttenuation({ATTENUATION_DB_IN_RANGE}, "
+            "spi_rfcm_v_attenuation) completed",
         },
     )
 
