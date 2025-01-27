@@ -40,6 +40,10 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY --from=build $VIRTUAL_ENV $VIRTUAL_ENV
 
+# Add source code to the PYTHONPATH so Python can locate the package
+COPY ./src/ska_mid_dish_b5dc_proxy ./ska_mid_dish_b5dc_proxy
+ENV PYTHONPATH=${PYTHONPATH}:/app/
+
 # Metadata labels
 LABEL int.skao.image.team="TEAM KAROO" \
       int.skao.image.authors="samuel.twum@skao.int" \
