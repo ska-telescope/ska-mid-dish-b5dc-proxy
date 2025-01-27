@@ -4,19 +4,21 @@
 
 from typing import Any, List, Optional, Tuple
 
-from ska_control_model import ResultCode
+from b5dc_cm import B5dcDeviceComponentManager
+from ska_control_model import CommunicationStatus, ResultCode
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
-from ska_tango_base import SKAController
+from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType, is_omni_thread
 from tango.server import attribute, command, device_property, run
 
-from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
+# from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
+
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
 
-class B5dcProxy(SKAController):
+class B5dcProxy(SKABaseDevice):
     """Implementation of the B5dcProxy Tango device."""
 
     # -----------------
@@ -25,11 +27,11 @@ class B5dcProxy(SKAController):
     B5dc_endpoint = device_property(dtype=str, default_value="127.0.0.1:10001")
     B5dc_sensor_update_period = device_property(dtype=str, default_value="10")
 
-    class InitCommand(SKAController.InitCommand):
+    class InitCommand(SKABaseDevice.InitCommand):
         """Initializes the attributes of the B5dc Tango device."""
 
         def do(
-            self: SKAController.InitCommand,
+            self: SKABaseDevice.InitCommand,
             *args: Any,
             **kwargs: Any,
         ) -> tuple[ResultCode, str]:
@@ -53,6 +55,7 @@ class B5dcProxy(SKAController):
                 "spi_rfcm_if_out_v_ain4": "vPolRfPowerOut",
                 "spi_rfcm_rf_temp_ain5": "rfTemperature",
                 "spi_rfcm_psu_pcb_temp_ain7": "rfcmPsuPcbTemperature",
+                "connectionstate": "connectionState",
             }
             # Configure change and archive events for all attribute in the map
             for attr in self._device._component_state_attr_map.values():
@@ -119,6 +122,17 @@ class B5dcProxy(SKAController):
     # -----------
     # Attributes
     # -----------
+    @attribute(
+        dtype=CommunicationStatus,
+        access=AttrWriteType.READ,
+        doc="Return the status of the connection to the B5dc server endpoint",
+    )
+    def connectionState(self) -> CommunicationStatus:
+        """Return the status of the connection to the B5dc server endpoint."""
+        return self.component_manager.component_state.get(
+            "connectionstate", CommunicationStatus.NOT_ESTABLISHED
+        )
+
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
@@ -286,6 +300,7 @@ class B5dcProxy(SKAController):
         """
         handler = self.get_command_object("SetFrequency")
         result_code, unique_id = handler(frequency)
+
         return [result_code], [unique_id]
 
 
