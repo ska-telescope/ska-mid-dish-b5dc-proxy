@@ -7,6 +7,6 @@ dependencies:
   version: 0.4.15
 - name: ska-mid-dish-dcp-lib
   repository: https://artefact.skao.int/repository/helm-internal
-  version: 0.0.2
-digest: sha256:9648e4dd1bf51c1a6ba56a89fcb007d9a811a9fd4f2bcc4bb1e66aefaf2b9955
-generated: "2025-01-23T23:49:32.203929752+02:00"
+  version: 0.0.3
+digest: sha256:8b211459aad84db955acd894798364a1e8c96829246fede294e78426113ad746
+generated: "2025-01-27T12:10:00.963542+02:00"
