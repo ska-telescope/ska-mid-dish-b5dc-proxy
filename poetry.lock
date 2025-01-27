@@ -1610,13 +1610,13 @@ reference = "skao"
 
 [[package]]
 name = "ska-mid-dish-dcp-lib"
-version = "0.0.1+dev.c6d4c39d7"
+version = "0.0.1+dev.c3411df85"
 description = ""
 optional = false
 python-versions = "*"
 files = [
-    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c6d4c39d7-py3-none-any.whl", hash = "sha256:b1ebc979d9193da0502f8e65dbbc3ef3550fd34361443749a139f04d65782a72"},
-    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c6d4c39d7.tar.gz", hash = "sha256:c4bd999c804fd60463e160d1c8c91eca706fba4aadb64461c466660313a4aa6f"},
+    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c3411df85-py3-none-any.whl", hash = "sha256:06709feb9d114e4bd2e980f1ce9587d8a0e7f1d658e49356d9ab1a068798979e"},
+    {file = "ska_mid_dish_dcp_lib-0.0.1+dev.c3411df85.tar.gz", hash = "sha256:d6785c18ec805d6bff4e0194813b0ac12b1b1a6cee2d6bf2bf49b6c3883f987b"},
 ]
 
 [package.source]
@@ -2269,4 +2269,4 @@ reference = "PyPI-public"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "b67bf8aadf6402f8d5778a86f53b1afd95e74c38e0b9e657aece35cf72b30545"
+content-hash = "f7f430b054626531297b7aede7581d920fac3013cb1603052ac110cd60024902"

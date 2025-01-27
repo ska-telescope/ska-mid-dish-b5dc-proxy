@@ -208,10 +208,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     async def _update_all_registers(self) -> None:
         """Update all B5dc device sensors and sync component state."""
-        max_retries = (
-            self._protocol._error_count_threshold + 1
-        )  # The naming convention here is inaccurate for the "public" protocol member
-        for register in self._reg_to_sensor_map:
+        max_retries = self._protocol.error_count_threshold + 1
+        for register in self._reg_to_sensor_map.keys():
             attempt = 0
             while attempt < max_retries:
                 try:
