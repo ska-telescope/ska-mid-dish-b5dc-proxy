@@ -119,6 +119,11 @@ class B5dcProxy(SKAController):
     # -----------
     # Attributes
     # -----------
+    @attribute(dtype=str)
+    def buildState(self) -> str:
+        """Get B5DC version information."""
+        return self.component_manager.component_state.get("buildstate")
+
     @attribute(
         dtype=float,
         access=AttrWriteType.READ,
