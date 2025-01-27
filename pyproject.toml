@@ -7,7 +7,7 @@ license= "BSD-3-Clause"
 readme = "README.md"
 
 [tool.poetry.scripts]
-B5DCManager = 'ska_mid_dish_b5dc_proxy.b5dc_proxy:main'
+B5dcProxy = 'ska_mid_dish_b5dc_proxy.b5dc_proxy:main'
 
 [[tool.poetry.source]]
 name = 'skao'
@@ -52,6 +52,11 @@ sphinxcontrib-plantuml = "^0.30"
 
 [tool.pytest.ini_options]
 addopts = "-v"
+testpaths = "tests"
+markers = [
+    "unit",
+    "acceptance"
+]
 
 [tool.flake8]
 docstring-style = "sphinx"

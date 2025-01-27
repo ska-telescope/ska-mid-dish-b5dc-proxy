@@ -21,6 +21,9 @@ WORKDIR /build
 # Copy project dependency files
 COPY pyproject.toml poetry.lock* ./
 
+# Uncomment below to update lock file
+# RUN poetry lock --no-update
+
 # Install third-party dependencies from PyPI and CAR
 RUN poetry install --only main --no-root --no-directory
 
@@ -39,6 +42,9 @@ ENV VIRTUAL_ENV=/app
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY --from=build $VIRTUAL_ENV $VIRTUAL_ENV
+
+# Uncomment below to save the lock file
+# COPY --from=build /build/poetry.lock /app/poetry.lock
 
 # Metadata labels
 LABEL int.skao.image.team="TEAM KAROO" \
