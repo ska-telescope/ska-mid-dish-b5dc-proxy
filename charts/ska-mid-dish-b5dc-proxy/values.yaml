@@ -37,4 +37,5 @@ b5dcproxy:
 
 deviceServers:
   b5dc-proxy:
-    file: "data/b5dc_manager.yaml"
+    file: "data/b5dc_proxy.yaml"
+    enabled: true

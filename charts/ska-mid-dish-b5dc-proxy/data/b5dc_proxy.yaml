@@ -11,7 +11,7 @@ server:
       classes:
         - name: "B5dcProxy"
           devices:
-            - name: name: "mid-dish/b5dc-proxy/SKA{{ printf "%01s" $dish_id }}"
+            - name: "mid-dish/b5dc-manager/SKA{{ printf "%01s" $dish_id }}"
               properties:
                 - name: "SkaLevel"
                   values:
@@ -22,6 +22,9 @@ server:
                 - name: "LoggingLevelDefault"
                   values:
                     - "5"
+                - name: "B5dc_sensor_update_period"
+                  values:
+                    - "{{ $.Values.b5dcproxy.B5dc_sensor_update_period }}"
                 - name: "B5dc_endpoint"
                   values:
                     {{- if eq (len $.Values.b5dcproxy.fqdns) 0 }}
@@ -29,11 +32,8 @@ server:
                     {{- else }}
                     - {{ index $.Values.b5dcproxy.fqdns $idx }}
                     {{- end }}
-                - name: "B5dc_sensor_update_period"
-                  values:
-                    - "{{ $.Values.b5dcproxy.B5dc_sensor_update_period }}"
-
   {{- end }}
+
 depends_on:
   - device: sys/database/2
 image:
