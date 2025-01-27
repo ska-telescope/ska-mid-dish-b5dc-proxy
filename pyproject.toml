@@ -26,7 +26,7 @@ python = "~3.10"
 pytango = "9.5.0"
 ska-tango-base = "1.0.0"
 numpy = "1.26.2"
-ska-mid-dish-dcp-lib = "0.0.2+dev.c9a2ca015"
+ska-mid-dish-dcp-lib = "0.0.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
