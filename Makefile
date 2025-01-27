@@ -57,7 +57,7 @@ CUSTOM_VALUES = --set b5dcproxy.image.image=$(NAME) \
 	--set ska-mid-dish-dcp-lib.enabled=true  \
 	--set ska-mid-dish-dcp-lib.b5dcSimulator.enabled=true \
 	--set ska-tango-base.enabled=true \
-	--set global.dishes="{111}"
+	--set global.dishes="{001}"
 K8S_TEST_IMAGE_TO_TEST=$(CI_REGISTRY)/ska-telescope/$(NAME)/$(NAME):$(OCI_TAG)
 K8S_TIMEOUT=600s
 endif
