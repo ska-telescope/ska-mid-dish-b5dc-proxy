@@ -8,7 +8,7 @@ import tango
 @pytest.fixture
 def b5dc_manager_device_fqdn() -> str:
     """Return the ds manager tango fqdn."""
-    return "mid-dish/b5dc-manager/SKA001"
+    return "mid-dish/b5dc-proxy/SKA001"
 
 
 @pytest.fixture

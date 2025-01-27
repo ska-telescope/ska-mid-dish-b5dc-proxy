@@ -1,29 +1,48 @@
 {{ $localchart := . }}
 
 {{- $lengthdishes := len .Values.global.dishes }}
-{{- $lengthfqdns := len .Values.b5dcmanager.fqdns }}
+{{- $lengthfqdns := len .Values.b5dcproxy.fqdns }}
 
 {{- if ne $lengthfqdns 0 }}
     {{- if ne $lengthdishes $lengthfqdns }}
-        {{- fail (printf "global.dishes (%d) and b5dcmanager.fqdns (%d) must have the same length when fqdns are specified" $lengthdishes $lengthfqdns ) }}
+        {{- fail (printf "global.dishes (%d) and b5dcproxy.fqdns (%d) must have the same length when fqdns are specified" $lengthdishes $lengthfqdns ) }}
     {{- end }}
 {{- end }}
+
 
 {{- range $key, $deviceserver := .Values.deviceServers }}
 
 {{ if $deviceserver.enabled }}
 
+{{- $_ := set  $localchart.Values "coalesced_dishes" ((coalesce $localchart.Values.global.dishes $deviceserver.instances ) | toStrings) }}
+
+{{- if hasKey $deviceserver "file"}}
+
 {{- $filedeviceserver := tpl ($.Files.Get $deviceserver.file) $ | fromYaml }}
 
-{{- $_ := set $filedeviceserver "instances" ($localchart.Values.global.dishes | toStrings) }}
+# If it's a dish device, update the instances
+{{- if hasKey $localchart.Values.global "dish_devices"  }}
+{{- $_ := set $filedeviceserver "instances" $localchart.Values.coalesced_dishes  }}
+{{- end }}
+
 {{- $context := dict "name" $key "deviceserver" $filedeviceserver "image" $deviceserver.image "local" $localchart }}
 
 {{ template "ska-tango-util.multidevice-config.tpl" $context }}
 {{ template "ska-tango-util.multidevice-sacc-role.tpl" $context }}
 {{ template "ska-tango-util.multidevice-job.tpl" $context }}
-{{ template "ska-tango-util.multidevice-svc.tpl" $context }} 
+{{ template "ska-tango-util.multidevice-svc.tpl" $context }}
+
+{{- else }}
+
+{{- $_ := set $deviceserver "instances" (coalesce $localchart.Values.global.instances $deviceserver.instances) }}
+{{- $context := dict "name" $key "deviceserver" $deviceserver "image" $deviceserver.image "local" $localchart }}
+{{ template "ska-tango-util.multidevice-config.tpl" $context }}
+{{ template "ska-tango-util.multidevice-sacc-role.tpl" $context }}
+{{ template "ska-tango-util.multidevice-job.tpl" $context }}
+{{ template "ska-tango-util.multidevice-svc.tpl" $context }}
+
+{{- end }}
 
 {{- end }} # if enabled
 
-{{- end }} # deviceservers
-
+{{- end }} # range deviceservers

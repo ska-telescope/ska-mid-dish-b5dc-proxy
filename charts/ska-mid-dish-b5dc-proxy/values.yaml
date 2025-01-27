@@ -5,7 +5,7 @@ subsystem: ska-dish-lmc
 telescope: SKA-mid
 
 labels:
-  app: ska-mid-dish-b5dc-manager
+  app: ska-mid-dish-b5dc-proxy
 
 ska-tango-base:
   enabled: false
@@ -26,7 +26,7 @@ dsconfig:
     tag: 1.5.1
     pullPolicy: IfNotPresent
 
-b5dcmanager:
+b5dcproxy:
   image:
     registry: artefact.skao.int
     image: ska-mid-dish-b5dc-proxy
@@ -36,7 +36,5 @@ b5dcmanager:
   B5dc_sensor_update_period: "10"
 
 deviceServers:
-  b5dc-manager:
+  b5dc-proxy:
     file: "data/b5dc_manager.yaml"
-    enabled: true
-
