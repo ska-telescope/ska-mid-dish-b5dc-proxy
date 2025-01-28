@@ -84,7 +84,8 @@ class B5dcProxy(SKABaseDevice):
         super().init_command_objects()
 
         for command_name, method_name in [
-            ("SetAttenuation", "set_attenuation"),
+            ("SetHPolAttenuation", "set_attenuation"),
+            ("SetVPolAttenuation", "set_attenuation"),
             ("SetFrequency", "set_frequency"),
         ]:
             self.register_command_object(
@@ -94,7 +95,6 @@ class B5dcProxy(SKABaseDevice):
                     self._command_tracker,
                     self.component_manager,
                     method_name,
-                    callback=None,
                     logger=self.logger,
                 ),
             )
@@ -255,11 +255,8 @@ class B5dcProxy(SKABaseDevice):
         """,
     )
     def SetHPolAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
-        """Set the horizontal polarization attenuation on the band 5 down converter.
-
-        :param attenuation_db: value to set in dB
-        """
-        handler = self.get_command_object("SetAttenuation")
+        """Set the horizontal polarization attenuation on the band 5 down converter."""
+        handler = self.get_command_object("SetHPolAttenuation")
         result_code, unique_id = handler(attenuation_db, "spi_rfcm_h_attenuation")
         return [result_code], [unique_id]
 
@@ -272,11 +269,8 @@ class B5dcProxy(SKABaseDevice):
         """,
     )
     def SetVPolAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
-        """Set the vertical polarization attenuation on the band 5 down converter.
-
-        :param attenuation_db: value to set in dB
-        """
-        handler = self.get_command_object("SetAttenuation")
+        """Set the vertical polarization attenuation on the band 5 down converter."""
+        handler = self.get_command_object("SetVPolAttenuation")
         result_code, unique_id = handler(attenuation_db, "spi_rfcm_v_attenuation")
         return [result_code], [unique_id]
 
@@ -288,17 +282,13 @@ class B5dcProxy(SKABaseDevice):
         dtype_out="DevVarLongStringArray",
         doc_in="""Set the frequency on the band 5 down converter.
 
-        :param frequency:B5dcFrequency  frequency to set
+        :param frequency (type:B5dcFrequency): frequency to set
         """,
     )
     def SetFrequency(self: "B5dcProxy", frequency: B5dcFrequency) -> DevVarLongStringArrayType:
-        """Set the frequency on the band 5 down converter.
-
-        :param frequency: frequency to set
-        """
+        """Set the frequency on the band 5 down converter."""
         handler = self.get_command_object("SetFrequency")
         result_code, unique_id = handler(frequency)
-
         return [result_code], [unique_id]
 
 

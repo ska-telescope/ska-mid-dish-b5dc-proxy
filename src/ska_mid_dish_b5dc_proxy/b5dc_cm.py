@@ -118,7 +118,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 remote_addr=self._server_addr,
             )
 
-            # Instantiate B5dc interface using newly created transport and protocol objects
+            # Instantiate B5dc interface objects using newly created 
+            # transport and protocol
             self._instantiate_b5dc_interface()
 
             self._con_established.set()
@@ -279,7 +280,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self,
         attenuation_db: int,
         attn_reg_name: str,
-        task_abort_event: Any,
         task_callback: Optional[Callable] = None,
     ) -> Tuple[TaskStatus, str]:
         """Set the attenuation on the band 5 down converter."""
@@ -291,19 +291,24 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
         return status, response
 
-    # pylint: disable=unused-argument
     def _set_attenuation(
         self,
         attenuation_db: int,
         attn_reg_name: str,
-        task_abort_event: Any,
         task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[threading.Event] = None,
     ) -> None:
         """Set the attenuation on the band 5 down converter."""
-        self._logger.info(
+        self._logger.debug(
             f"Called SetAttenuation with args (attenuation_db={attenuation_db}, "
             f"attn_reg_name={attn_reg_name})"
         )
+
+        if task_abort_event.is_set():
+            task_callback(
+                status=TaskStatus.ABORTED,
+            )
+            return
 
         if task_callback:
             task_callback(
@@ -336,7 +341,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     def set_frequency(
         self,
         frequency: B5dcFrequency,
-        task_abort_event: Any,
         task_callback: Optional[Callable] = None,
     ) -> Tuple[TaskStatus, str]:
         """Set the frequency on the band 5 down converter."""
@@ -359,15 +363,20 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
         return status, response
 
-    # pylint: disable=unused-argument
     def _set_frequency(
         self,
         frequency: B5dcFrequency,
-        task_abort_event: Any,
-        task_callback: Callable,
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[threading.Event] = None,
     ) -> None:
         """Set the frequency on the band 5 down converter."""
-        self._logger.info(f"Called SetFrequency with arg (frequency={frequency})")
+        self._logger.debug(f"Called SetFrequency with arg (frequency={frequency})")
+
+        if task_abort_event.is_set():
+            task_callback(
+                status=TaskStatus.ABORTED,
+            )
+            return
 
         if task_callback:
             task_callback(
@@ -376,7 +385,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             )
 
         try:
-            # TODO: Can this async method be run in the already existing event loop?
             asyncio.run(self._b5dc_device_freq_conf.set_frequency(frequency))
         except B5dcDeviceFrequencyException as ex:
             self._logger.error(f"An error occured on setting the B5dc frequency: {ex}")
