@@ -216,7 +216,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     async def _update_all_registers(self) -> None:
         """Update all B5dc device sensors and sync component state."""
-        max_retries = self._protocol.error_count_threshold + 1
+        max_retries = self._protocol.get_error_count_threshold() + 1
         for register, sensor in self._reg_to_sensor_map.items():
             attempt = 0
             while attempt < max_retries:
@@ -226,11 +226,11 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 except B5dcProtocolTimeout:
                     attempt += 1
                     self._logger.warning(
-                        f"Timeout updating sensor {sensor}." f" Retry attempt {attempt}"
+                        f"Timeout updating sensor {sensor}. Retry attempt {attempt}"
                     )
                     if attempt >= max_retries:
                         self._logger.warning(
-                            f"Exceeded maximum retries for sensor update" f"request: {sensor}"
+                            f"Exceeded maximum retries for sensor update req: {sensor}"
                         )
                         break
             if attempt >= max_retries:
