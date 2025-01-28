@@ -214,11 +214,10 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 await self._update_all_registers()
             await asyncio.sleep(self._polling_period)
 
-    # pylint: disable=consider-using-dict-items
     async def _update_all_registers(self) -> None:
         """Update all B5dc device sensors and sync component state."""
         max_retries = self._protocol.error_count_threshold + 1
-        for register in self._reg_to_sensor_map:
+        for register, _ in self._reg_to_sensor_map.items():
             attempt = 0
             while attempt < max_retries:
                 try:
