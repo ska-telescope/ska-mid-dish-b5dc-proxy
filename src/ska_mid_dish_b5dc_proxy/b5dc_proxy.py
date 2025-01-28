@@ -274,9 +274,6 @@ class B5dcProxy(SKABaseDevice):
         result_code, unique_id = handler(attenuation_db, "spi_rfcm_v_attenuation")
         return [result_code], [unique_id]
 
-    # NOTE: The cmd input cannot be enforced to take the ENUM, due to
-    # the enum value definitions (eg: F_11_1_GHZ=1,...). Tango only allows
-    # enums of value (0,1,2,3,4,...) as cmd input types
     @command(
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
