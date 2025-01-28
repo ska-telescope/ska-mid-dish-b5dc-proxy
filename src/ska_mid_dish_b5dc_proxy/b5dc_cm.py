@@ -298,7 +298,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             f"attn_reg_name={attn_reg_name})"
         )
 
-        if task_abort_event.is_set():
+        if task_abort_event and task_abort_event.is_set():
             task_callback(
                 status=TaskStatus.ABORTED,
             )
@@ -365,7 +365,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         """Set the frequency on the band 5 down converter."""
         self._logger.debug(f"Called SetFrequency with arg (frequency={frequency})")
 
-        if task_abort_event.is_set():
+        if task_abort_event and task_abort_event.is_set():
             task_callback(
                 status=TaskStatus.ABORTED,
             )
