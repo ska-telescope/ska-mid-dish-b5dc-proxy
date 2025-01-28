@@ -118,7 +118,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 remote_addr=self._server_addr,
             )
 
-            # Instantiate B5dc interface objects using newly created 
+            # Instantiate B5dc interface objects using newly created
             # transport and protocol
             self._instantiate_b5dc_interface()
 
