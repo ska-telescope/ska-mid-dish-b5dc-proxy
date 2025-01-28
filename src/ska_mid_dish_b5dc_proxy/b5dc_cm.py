@@ -134,9 +134,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
                 self._con_established.clear()
 
-                self._logger.warning(
-                    "Connection to B5DC server lost. " "Cleaning up and attempting to re-establish"
-                )
+                self._logger.warning("Reestablishing lost B5dc server connection")
             finally:
                 # Clean up transport for later recreation
                 if self._transport:
@@ -275,7 +273,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     #  Command handling methods
     # ==========================
 
-    # pylint: disable=unused-argument
     def set_attenuation(
         self,
         attenuation_db: int,
@@ -337,7 +334,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 result=f"SetAttenuation({attenuation_db}, {attn_reg_name}) completed",
             )
 
-    # pylint: disable=unused-argument
     def set_frequency(
         self,
         frequency: B5dcFrequency,

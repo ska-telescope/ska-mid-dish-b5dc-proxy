@@ -4,14 +4,14 @@
 
 from typing import Any, List, Optional, Tuple
 
-# from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
-from b5dc_cm import B5dcDeviceComponentManager
 from ska_control_model import CommunicationStatus, ResultCode
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType, is_omni_thread
 from tango.server import attribute, command, device_property, run
+
+from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 

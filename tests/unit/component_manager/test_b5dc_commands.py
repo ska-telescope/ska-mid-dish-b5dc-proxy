@@ -79,9 +79,7 @@ def test_b5dc_set_frequency_method_with_valid_input(
     assert iterations < max_try - 1, "Connection not established"
 
     # Set the frequency and verify that expected lrc updates are published
-    b5dc_cm.set_frequency(
-        frequency_to_set, task_abort_event=None, task_callback=callbacks["task_cb"]
-    )
+    b5dc_cm.set_frequency(frequency_to_set, task_callback=callbacks["task_cb"])
 
     expected_call_kwargs = (
         {"status": TaskStatus.QUEUED},
@@ -135,7 +133,6 @@ def test_b5dc_set_attenuation_with_valid_input(callbacks: dict) -> None:
     b5dc_cm.set_attenuation(
         ATTENUATION_DB_IN_RANGE,
         "spi_rfcm_v_attenuation",
-        task_abort_event=None,
         task_callback=callbacks["task_cb"],
     )
 
