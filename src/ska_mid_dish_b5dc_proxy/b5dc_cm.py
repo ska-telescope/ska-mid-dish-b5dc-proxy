@@ -20,6 +20,8 @@ from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPro
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol, B5dcProtocolTimeout
 from ska_tango_base.executor import TaskExecutorComponentManager
 
+WAIT_BEFORE_RETRY_SEC = 5
+
 
 class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     """Component manager enabling monitoring and control of the B5DC device."""
@@ -50,6 +52,12 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self.loop = None
         self._transport = None
         self._protocol = None
+
+        self._b5dc_property_parser: B5dcPropertyParser = None
+        self._b5dc_interface: B5dcInterface = None
+        self._b5dc_device_sensors: B5dcDeviceSensors = None
+        self._b5dc_device_attn_conf: B5dcDeviceConfigureAttenuation = None
+        self._b5dc_device_freq_conf: B5dcDeviceConfigureFrequency = None
 
         self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
@@ -118,9 +126,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 remote_addr=self._server_addr,
             )
 
-            # Instantiate B5dc interface objects using newly created
+            # Update B5dc interface objects using newly created
             # transport and protocol
-            self._instantiate_b5dc_interface()
+            self._update_b5dc_interface()
 
             self._con_established.set()
 
@@ -139,9 +147,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 # Clean up transport for later recreation
                 if self._transport:
                     self._transport.close()
-                await asyncio.sleep(5)
+                await asyncio.sleep(WAIT_BEFORE_RETRY_SEC)
 
-    def _instantiate_b5dc_interface(self) -> None:
+    def _update_b5dc_interface(self) -> None:
         """Create instances of B5dc freq and atten config and device sensor classes."""
         self._b5dc_property_parser = B5dcPropertyParser(self._logger)
         self._b5dc_interface = B5dcInterface(
