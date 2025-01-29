@@ -114,7 +114,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self.loop.create_task(self._establish_server_connection())
         self.loop.run_forever()
 
-    # pylint: disable=attribute-defined-outside-init
     async def _establish_server_connection(self) -> None:
         """Establish and maintain server connection within event loop."""
         while True:

@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 """Test component manager handling of unhappy path on SetFrequency cmd call."""
 import time
 from unittest.mock import AsyncMock, Mock, patch
