@@ -341,7 +341,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     def set_frequency(
         self,
-        frequency: B5dcFrequency,
+        frequency: int,
         task_callback: Optional[Callable] = None,
     ) -> Tuple[TaskStatus, str]:
         """Set the frequency on the band 5 down converter."""
@@ -366,7 +366,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     def _set_frequency(
         self,
-        frequency: B5dcFrequency,
+        frequency: int,
         task_callback: Optional[Callable] = None,
         task_abort_event: Optional[threading.Event] = None,
     ) -> None:
