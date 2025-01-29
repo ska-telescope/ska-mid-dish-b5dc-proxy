@@ -90,7 +90,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             connectionstate=CommunicationStatus.NOT_ESTABLISHED,
             **kwargs,
         )
-        self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
 
         # Start the server connection event loop in a separate thread
         self.loop_thread = threading.Thread(
