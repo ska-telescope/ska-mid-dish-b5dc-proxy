@@ -54,6 +54,9 @@ sphinxcontrib-plantuml = "^0.30"
 
 [tool.pytest.ini_options]
 addopts = "-v"
+markers = [
+    "unit",
+]
 
 [tool.flake8]
 docstring-style = "sphinx"
