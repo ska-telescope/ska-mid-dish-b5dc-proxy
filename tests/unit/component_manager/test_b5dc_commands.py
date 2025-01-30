@@ -25,6 +25,7 @@ def test_b5dc_set_frequency_rejects_invalid_freq() -> None:
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()
     ):
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, update_period, Mock())
+        b5dc_cm.start_communicating()
 
     max_try = 5
     for iterations in range(max_try):
@@ -68,6 +69,7 @@ def test_b5dc_set_frequency_method_with_valid_input(
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
     ), patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()):
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, update_period, Mock())
+        b5dc_cm.start_communicating()
 
     max_try = 5
     for iterations in range(max_try):
@@ -125,6 +127,7 @@ def test_b5dc_set_attenuation_with_valid_input(attenuation_register: str, callba
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
     ), patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()):
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, update_period, Mock())
+        b5dc_cm.start_communicating()
 
     max_try = 5
     for iterations in range(max_try):
@@ -191,6 +194,7 @@ def test_b5dc_set_attenuation_with_invalid_input(
         "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
     ), patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()):
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, update_period, Mock())
+        b5dc_cm.start_communicating()
 
     max_try = 5
     for iterations in range(max_try):

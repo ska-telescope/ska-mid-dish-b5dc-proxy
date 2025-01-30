@@ -23,6 +23,7 @@ def b5dc_cm_setup():
         B5dcDeviceComponentManager, "_update_component_state"
     ) as update_component_state_mock:
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, Mock(), Mock())
+        b5dc_cm.start_communicating()
 
         max_try = 5
         for iterations in range(max_try):
