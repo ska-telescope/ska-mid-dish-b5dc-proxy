@@ -20,7 +20,8 @@ from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPro
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol, B5dcProtocolTimeout
 from ska_tango_base.executor import TaskExecutorComponentManager
 
-WAIT_BEFORE_RETRY_SEC = 5
+WAIT_BEFORE_CONNECTION_RETRY_SEC = 5
+MAX_RETRY_COUNT = 3
 
 
 class B5dcDeviceComponentManager(TaskExecutorComponentManager):
@@ -138,7 +139,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 # Clean up transport for later recreation
                 if self._transport:
                     self._transport.close()
-                await asyncio.sleep(WAIT_BEFORE_RETRY_SEC)
+                await asyncio.sleep(WAIT_BEFORE_CONNECTION_RETRY_SEC)
 
     def _update_b5dc_interface(self) -> None:
         """Create instances of B5dc freq and atten config and device sensor classes."""
@@ -212,10 +213,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     async def _update_all_registers(self) -> None:
         """Update all B5dc device sensors and sync component state."""
-        max_retries = self._protocol.get_error_count_threshold() + 1
         for register, sensor in self._reg_to_sensor_map.items():
             attempt = 0
-            while attempt < max_retries:
+            while attempt < MAX_RETRY_COUNT:
                 try:
                     await self._sync_register_within_event_loop(register)
                     break
@@ -224,12 +224,12 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                     self._logger.warning(
                         f"Timeout updating sensor {sensor}. Retry attempt {attempt}"
                     )
-                    if attempt >= max_retries:
+                    if attempt >= MAX_RETRY_COUNT:
                         self._logger.warning(
                             f"Exceeded maximum retries for sensor update req: {sensor}"
                         )
                         break
-            if attempt >= max_retries:
+            if attempt >= MAX_RETRY_COUNT:
                 break
 
     async def _sync_register_within_event_loop(self, register_name: str) -> None:
