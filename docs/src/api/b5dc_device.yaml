@@ -57,22 +57,23 @@
       dtype_out: DevVarLongStringArray
     - name: SetFrequency
       disp_level: OPERATOR
-      doc_in: "Set the frequency on the band 5 down converter.\n\n        :param frequency\
-        \ (type:B5dcFrequency): frequency to set\n        "
+      doc_in: "Set the frequency on the band 5 down converter.\n\n        :param frequency:\
+        \ frequency to set [B5dcFrequency.F_11_1_GHZ(1),\n        B5dcFrequency.F_13_2_GHZ(2)\
+        \ or B5dcFrequency.F_13_86_GHZ(3)]\n        "
       doc_out: Uninitialised
       dtype_in: DevLong64
       dtype_out: DevVarLongStringArray
     - name: SetHPolAttenuation
       disp_level: OPERATOR
       doc_in: "Set the horizontal polarization attenuation on the band 5 down converter.\n\
-        \n        :param attenuation_db: value to set in dB\n        "
+        \n        :param attenuation_db: value to set in dB [0-31dB]\n        "
       doc_out: Uninitialised
       dtype_in: DevLong64
       dtype_out: DevVarLongStringArray
     - name: SetVPolAttenuation
       disp_level: OPERATOR
       doc_in: "Set the vertical polarization attenuation on the band 5 down converter.\n\
-        \n        :param attenuation_db: value to set in dB\n        "
+        \n        :param attenuation_db: value to set in dB [0-31dB]\n        "
       doc_out: Uninitialised
       dtype_in: DevLong64
       dtype_out: DevVarLongStringArray
