@@ -4,7 +4,7 @@
 
 import asyncio
 import logging
-import threading
+from threading import Event, Lock, Thread
 from typing import Any, Callable, Optional, Tuple
 
 from ska_control_model import CommunicationStatus, TaskStatus
@@ -59,6 +59,13 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._b5dc_device_attn_conf: B5dcDeviceConfigureAttenuation = None
         self._b5dc_device_freq_conf: B5dcDeviceConfigureFrequency = None
 
+        self.loop_thread: Optional[Thread] = None
+        # Flag to indicate server connection established
+        self._con_established = Event()
+        # Lock to prevent contention on request to update B5dc device
+        # sensors across the event loops running on different threads
+        self._sensor_update_lock = Lock()
+
         self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
             "spi_rfcm_pll_lock": "rfcm_pll_lock",
@@ -89,19 +96,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             spi_rfcm_psu_pcb_temp_ain7=0.0,
             **kwargs,
         )
-
-        # Start the server connection event loop in a separate thread
-        self.loop_thread = threading.Thread(
-            target=self._start_connection_event_loop, daemon=True, name="Asyncio loop thread"
-        )
-        self.loop_thread.start()
-
-        # Flag to indicate server connection established
-        self._con_established = threading.Event()
-
-        # Lock to prevent contention on request to update B5dc device sensors across
-        # the event loops running on different threads
-        self._sensor_update_lock = threading.Lock()
 
     # =============================
     #  Connection handling methods
@@ -295,7 +289,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         attenuation_db: int,
         attn_reg_name: str,
         task_callback: Optional[Callable] = None,
-        task_abort_event: Optional[threading.Event] = None,
+        task_abort_event: Optional[Event] = None,
     ) -> None:
         """Set the attenuation on the band 5 down converter."""
         self._logger.debug(
@@ -365,7 +359,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self,
         frequency: int,
         task_callback: Optional[Callable] = None,
-        task_abort_event: Optional[threading.Event] = None,
+        task_abort_event: Optional[Event] = None,
     ) -> None:
         """Set the frequency on the band 5 down converter."""
         self._logger.debug(f"Called SetFrequency with arg (frequency={frequency})")
@@ -403,3 +397,13 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         """Log and update new component state."""
         self._logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(**kwargs)
+
+    def start_communicating(self) -> None:
+        """Start the communication with the B5DC device."""
+        self._logger.debug("Starting communication with B5DC device")
+        self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
+        # Start the server connection event loop in a separate thread
+        self.loop_thread = Thread(
+            target=self._start_connection_event_loop, daemon=True, name="Asyncio loop thread"
+        )
+        self.loop_thread.start()
