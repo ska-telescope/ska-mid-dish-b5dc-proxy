@@ -175,10 +175,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         if self.is_connection_established():
             try:
                 asyncio.run(self._update_sensor_with_lock(register_name))
-
-                if self.component_state.get("connectionstate") != CommunicationStatus.ESTABLISHED:
-                    self._update_communication_state(CommunicationStatus.ESTABLISHED)
-
+                self._update_communication_state(CommunicationStatus.ESTABLISHED)
             except KeyError:
                 self._logger.error(
                     f"Error on request to update " f"unknown register: {register_name}"
@@ -240,9 +237,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         if self.is_connection_established():
             try:
                 await self._update_sensor_with_lock(register_name)
-
-                if self.component_state.get("connectionstate") != CommunicationStatus.ESTABLISHED:
-                    self._update_communication_state(CommunicationStatus.ESTABLISHED)
+                self._update_communication_state(CommunicationStatus.ESTABLISHED)
             except KeyError:
                 self._logger.error(
                     f"Failure on request to update register " f"value: {register_name}"
