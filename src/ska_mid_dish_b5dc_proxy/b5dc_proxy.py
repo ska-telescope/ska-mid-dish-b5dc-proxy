@@ -108,10 +108,6 @@ class B5dcProxy(SKABaseDevice):
     # pylint: disable=unused-argument
     def _component_state_changed(self, *args: Any, **kwargs: Any):
         """Push and archive events on component state change."""
-        if not hasattr(self, "_component_state_attr_map"):
-            self.logger.warning("Init not completed, but state is being updated [%s]", kwargs)
-            return
-
         for comp_state_name, comp_state_value in kwargs.items():
             attribute_name = self._component_state_attr_map.get(comp_state_name, comp_state_name)
             setattr(self, attribute_name, comp_state_value)
