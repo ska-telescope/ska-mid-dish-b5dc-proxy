@@ -53,7 +53,6 @@ class B5dcProxy(SKABaseDevice):
                 "spi_rfcm_if_out_v_ain4": "vPolRfPowerOut",
                 "spi_rfcm_rf_temp_ain5": "rfTemperature",
                 "spi_rfcm_psu_pcb_temp_ain7": "rfcmPsuPcbTemperature",
-                "connectionstate": "connectionState",
             }
             # Configure change and archive events for all attribute in the map
             for attr in self._device._component_state_attr_map.values():
