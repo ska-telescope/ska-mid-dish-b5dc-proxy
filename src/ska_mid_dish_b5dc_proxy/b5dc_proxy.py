@@ -76,6 +76,7 @@ class B5dcProxy(SKABaseDevice):
             B5dc_server_port,
             int(self.B5dc_sensor_update_period),
             logger=self.logger,
+            communication_state_callback=self._communication_state_changed,
             component_state_callback=self._component_state_changed,
         )
 
@@ -98,6 +99,11 @@ class B5dcProxy(SKABaseDevice):
                     logger=self.logger,
                 ),
             )
+
+    def _communication_state_changed(self, communication_state: CommunicationStatus):
+        """Push and archive events on communication state change."""
+        self.push_change_event("connectionState", communication_state)
+        self.push_archive_event("connectionState", communication_state)
 
     # pylint: disable=unused-argument
     def _component_state_changed(self, *args: Any, **kwargs: Any):
@@ -127,9 +133,7 @@ class B5dcProxy(SKABaseDevice):
     )
     def connectionState(self) -> CommunicationStatus:
         """Return the status of the connection to the B5dc server endpoint."""
-        return self.component_manager.component_state.get(
-            "connectionstate", CommunicationStatus.NOT_ESTABLISHED
-        )
+        return self.component_manager.communication_state
 
     @attribute(
         dtype=float,

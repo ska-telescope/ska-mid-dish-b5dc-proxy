@@ -87,7 +87,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             spi_rfcm_if_out_v_ain4=0.0,
             spi_rfcm_rf_temp_ain5=0.0,
             spi_rfcm_psu_pcb_temp_ain7=0.0,
-            connectionstate=CommunicationStatus.NOT_ESTABLISHED,
             **kwargs,
         )
 
@@ -404,8 +403,3 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         """Log and update new component state."""
         self._logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(**kwargs)
-
-    def _update_communication_state(self, communication_state):
-        """Update connection state attribute."""
-        self._update_component_state(**{"connectionstate": communication_state})
-        return super()._update_communication_state(communication_state)
