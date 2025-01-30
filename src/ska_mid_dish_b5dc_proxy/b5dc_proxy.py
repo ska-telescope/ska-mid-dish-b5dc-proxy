@@ -279,7 +279,8 @@ class B5dcProxy(SKABaseDevice):
         dtype_out="DevVarLongStringArray",
         doc_in="""Set the frequency on the band 5 down converter.
 
-        :param frequency (type:B5dcFrequency): frequency to set
+        :param frequency: frequency to set [B5dcFrequency.F_11_1_GHZ(1),
+        B5dcFrequency.F_13_2_GHZ(2) or B5dcFrequency.F_13_86_GHZ(3)]
         """,
     )
     def SetFrequency(self: "B5dcProxy", frequency: B5dcFrequency) -> DevVarLongStringArrayType:
