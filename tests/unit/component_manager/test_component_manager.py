@@ -140,6 +140,7 @@ def test_b5dc_polling_update_frequency() -> None:
         B5dcDeviceComponentManager, "_update_build_state"
     ):
         b5dc_cm = B5dcDeviceComponentManager("127.0.0.1", 10001, update_period, Mock())
+        b5dc_cm.start_communicating()
 
         max_try = 5
         for iterations in range(max_try):

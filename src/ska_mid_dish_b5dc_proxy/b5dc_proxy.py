@@ -4,9 +4,9 @@
 
 from typing import Any, List, Optional, Tuple
 
-from ska_control_model import ResultCode
+from ska_control_model import CommunicationStatus, ResultCode
 from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
-from ska_tango_base import SKAController
+from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType, is_omni_thread
 from tango.server import attribute, command, device_property, run
@@ -16,7 +16,7 @@ from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
 
-class B5dcProxy(SKAController):
+class B5dcProxy(SKABaseDevice):
     """Implementation of the B5dcProxy Tango device."""
 
     # -----------------
@@ -25,11 +25,11 @@ class B5dcProxy(SKAController):
     B5dc_endpoint = device_property(dtype=str, default_value="127.0.0.1:10001")
     B5dc_sensor_update_period = device_property(dtype=str, default_value="10")
 
-    class InitCommand(SKAController.InitCommand):
+    class InitCommand(SKABaseDevice.InitCommand):
         """Initializes the attributes of the B5dc Tango device."""
 
         def do(
-            self: SKAController.InitCommand,
+            self: SKABaseDevice.InitCommand,
             *args: Any,
             **kwargs: Any,
         ) -> tuple[ResultCode, str]:
@@ -60,6 +60,7 @@ class B5dcProxy(SKAController):
                 self._device.set_archive_event(attr, True, False)
 
             (result_code, message) = super().do()  # type: ignore
+            self._device.component_manager.start_communicating()
             return ResultCode(result_code), message
 
     def create_component_manager(self: "B5dcProxy") -> B5dcDeviceComponentManager:
@@ -75,6 +76,7 @@ class B5dcProxy(SKAController):
             B5dc_server_port,
             int(self.B5dc_sensor_update_period),
             logger=self.logger,
+            communication_state_callback=self._communication_state_changed,
             component_state_callback=self._component_state_changed,
         )
 
@@ -83,7 +85,8 @@ class B5dcProxy(SKAController):
         super().init_command_objects()
 
         for command_name, method_name in [
-            ("SetAttenuation", "set_attenuation"),
+            ("SetHPolAttenuation", "set_attenuation"),
+            ("SetVPolAttenuation", "set_attenuation"),
             ("SetFrequency", "set_frequency"),
         ]:
             self.register_command_object(
@@ -93,18 +96,18 @@ class B5dcProxy(SKAController):
                     self._command_tracker,
                     self.component_manager,
                     method_name,
-                    callback=None,
                     logger=self.logger,
                 ),
             )
 
+    def _communication_state_changed(self, communication_state: CommunicationStatus):
+        """Push and archive events on communication state change."""
+        self.push_change_event("connectionState", communication_state)
+        self.push_archive_event("connectionState", communication_state)
+
     # pylint: disable=unused-argument
     def _component_state_changed(self, *args: Any, **kwargs: Any):
         """Push and archive events on component state change."""
-        if not hasattr(self, "_component_state_attr_map"):
-            self.logger.warning("Init not completed, but state is being updated [%s]", kwargs)
-            return
-
         for comp_state_name, comp_state_value in kwargs.items():
             attribute_name = self._component_state_attr_map.get(comp_state_name, comp_state_name)
             setattr(self, attribute_name, comp_state_value)
@@ -116,9 +119,18 @@ class B5dcProxy(SKAController):
                 self.push_change_event(attribute_name, comp_state_value)
                 self.push_archive_event(attribute_name, comp_state_value)
 
-    # -----------
+    # ===========
     # Attributes
-    # -----------
+    # ===========
+    @attribute(
+        dtype=CommunicationStatus,
+        access=AttrWriteType.READ,
+        doc="Return the status of the connection to the B5dc server endpoint",
+    )
+    def connectionState(self) -> CommunicationStatus:
+        """Return the status of the connection to the B5dc server endpoint."""
+        return self.component_manager.communication_state
+
     @attribute(dtype=str)
     def buildState(self) -> str:
         """Get B5DC version information."""
@@ -236,31 +248,48 @@ class B5dcProxy(SKAController):
         self.component_manager.sync_register_outside_event_loop("spi_rfcm_psu_pcb_temp_ain7")
         return self.component_manager.component_state.get("spi_rfcm_psu_pcb_temp_ain7", 0.0)
 
-    # -----------
+    # =========
     # Commands
-    # -----------
+    # =========
     @command(
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
-    )
-    def SetAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
-        """Set the attenuation on the band 5 down converter.
+        doc_in="""Set the horizontal polarization attenuation on the band 5 down converter.
 
-        :param attenuation_db: value to set in dB
-        """
-        handler = self.get_command_object("SetAttenuation")
-        result_code, unique_id = handler(attenuation_db)
+        :param attenuation_db: value to set in dB [0-31dB]
+        """,
+    )
+    def SetHPolAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
+        """Set the horizontal polarization attenuation on the band 5 down converter."""
+        handler = self.get_command_object("SetHPolAttenuation")
+        result_code, unique_id = handler(attenuation_db, "spi_rfcm_h_attenuation")
         return [result_code], [unique_id]
 
     @command(
         dtype_in=int,
         dtype_out="DevVarLongStringArray",
+        doc_in="""Set the vertical polarization attenuation on the band 5 down converter.
+
+        :param attenuation_db: value to set in dB [0-31dB]
+        """,
+    )
+    def SetVPolAttenuation(self: "B5dcProxy", attenuation_db: int) -> DevVarLongStringArrayType:
+        """Set the vertical polarization attenuation on the band 5 down converter."""
+        handler = self.get_command_object("SetVPolAttenuation")
+        result_code, unique_id = handler(attenuation_db, "spi_rfcm_v_attenuation")
+        return [result_code], [unique_id]
+
+    @command(
+        dtype_in=int,
+        dtype_out="DevVarLongStringArray",
+        doc_in="""Set the frequency on the band 5 down converter.
+
+        :param frequency: frequency to set [B5dcFrequency.F_11_1_GHZ(1),
+        B5dcFrequency.F_13_2_GHZ(2) or B5dcFrequency.F_13_86_GHZ(3)]
+        """,
     )
     def SetFrequency(self: "B5dcProxy", frequency: B5dcFrequency) -> DevVarLongStringArrayType:
-        """Set the frequency on the band 5 down converter.
-
-        :param frequency: frequency to set
-        """
+        """Set the frequency on the band 5 down converter."""
         handler = self.get_command_object("SetFrequency")
         result_code, unique_id = handler(frequency)
         return [result_code], [unique_id]

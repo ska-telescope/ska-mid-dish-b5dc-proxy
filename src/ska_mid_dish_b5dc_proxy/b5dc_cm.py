@@ -6,22 +6,32 @@ import asyncio
 import dataclasses
 import json
 import logging
-import threading
-from typing import Any
+from threading import Event, Lock, Thread
+from typing import Any, Callable, Optional, Tuple
 
-from ska_mid_dish_dcp_lib.device.b5dc_device import B5dcDeviceSensors
-from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcPllState
+from ska_control_model import CommunicationStatus, TaskStatus
+from ska_mid_dish_dcp_lib.device.b5dc_device import (
+    B5dcDeviceAttenuationException,
+    B5dcDeviceConfigureAttenuation,
+    B5dcDeviceConfigureFrequency,
+    B5dcDeviceFrequencyException,
+    B5dcDeviceSensors,
+)
+from ska_mid_dish_dcp_lib.device.b5dc_device_mappings import B5dcFrequency, B5dcPllState
 from ska_mid_dish_dcp_lib.device.b5dc_pca import (
     B5dcFpgaFirmware,
     B5dcIicDevice,
     B5dcPhysicalConfiguration,
 )
 from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPropertyParser
-from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol
+from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol, B5dcProtocolTimeout
 from ska_tango_base.executor import TaskExecutorComponentManager
 
 from ska_mid_dish_b5dc_proxy.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
 from ska_mid_dish_b5dc_proxy.models.data_classes import B5dcBuildStateDataclass
+
+WAIT_BEFORE_CONNECTION_RETRY_SEC = 5
+MAX_RETRY_COUNT = 3
 
 
 class B5dcDeviceComponentManager(TaskExecutorComponentManager):
@@ -57,6 +67,19 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._b5dc_pca: B5dcPhysicalConfiguration = None
         self._b5dc_fw: B5dcFpgaFirmware = None
 
+        self._b5dc_property_parser: B5dcPropertyParser = None
+        self._b5dc_interface: B5dcInterface = None
+        self._b5dc_device_sensors: B5dcDeviceSensors = None
+        self._b5dc_device_attn_conf: B5dcDeviceConfigureAttenuation = None
+        self._b5dc_device_freq_conf: B5dcDeviceConfigureFrequency = None
+
+        self.loop_thread: Optional[Thread] = None
+        # Flag to indicate server connection established
+        self._con_established = Event()
+        # Lock to prevent contention on request to update B5dc device
+        # sensors across the event loops running on different threads
+        self._sensor_update_lock = Lock()
+
         self._reg_to_sensor_map = {
             "spi_rfcm_frequency": "rfcm_frequency",
             "spi_rfcm_pll_lock": "rfcm_pll_lock",
@@ -89,17 +112,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             **kwargs,
         )
 
-        # Start the server connection event loop in a separate thread
-        self.loop_thread = threading.Thread(
-            target=self._start_connection_event_loop, daemon=True, name="Asyncio loop thread"
-        )
-        self.loop_thread.start()
-
-        # Flag to indicate server connection established
-        self._con_established = threading.Event()
-
-        # Lock to prevent contention on request to update B5dc device sensors
-        self._sensor_update_lock = asyncio.Lock()
+    # =============================
+    #  Connection handling methods
+    # =============================
 
     def _start_connection_event_loop(self) -> None:
         """Assign server connection task and run event loop."""
@@ -107,7 +122,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self.loop.create_task(self._establish_server_connection())
         self.loop.run_forever()
 
-    # pylint: disable=attribute-defined-outside-init
     async def _establish_server_connection(self) -> None:
         """Establish and maintain server connection within event loop."""
         while True:
@@ -118,56 +132,82 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 remote_addr=self._server_addr,
             )
 
-            self._b5dc_property_parser = B5dcPropertyParser(self._logger)
-            self._b5dc_interface = B5dcInterface(
-                self._logger,
-                self._b5dc_property_parser,
-                get_method=self._protocol.sync_read_register,
-                set_method=self._protocol.sync_write_register,
-            )
-            self._b5dc_device_sensors = B5dcDeviceSensors(self._logger, self._b5dc_interface)
+            # Update B5dc interface objects using newly created
+            # transport and protocol
+            self._update_b5dc_interface()
             self._b5dc_iic = B5dcIicDevice(self._protocol)
             self._b5dc_fw = B5dcFpgaFirmware(self._logger, self._protocol)
             self._b5dc_pca = B5dcPhysicalConfiguration(self._logger, self._b5dc_iic)
             await self._update_build_state()
 
-            # Sync component state to sensor values on connection start before
-            # setting polling loop
             self._con_established.set()
 
-            self.loop.create_task(self._periodically_poll_sensor_values())
+            poll_loop = self.loop.create_task(self._periodically_poll_sensor_values())
 
             try:
                 await server_connection_lost
-                self._logger.warning(
-                    "Connection to B5DC server lost. \
-                    Cleaning up and attempting to re-establish"
-                )
+                self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
+
+                poll_loop.cancel()
+
+                self._con_established.clear()
+
+                self._logger.warning("Reestablishing lost B5dc server connection")
             finally:
                 # Clean up transport for later recreation
                 if self._transport:
                     self._transport.close()
-                await asyncio.sleep(5)
+                await asyncio.sleep(WAIT_BEFORE_CONNECTION_RETRY_SEC)
+
+    def _update_b5dc_interface(self) -> None:
+        """Create instances of B5dc freq and atten config and device sensor classes."""
+        self._b5dc_property_parser = B5dcPropertyParser(self._logger)
+        self._b5dc_interface = B5dcInterface(
+            self._logger,
+            self._b5dc_property_parser,
+            get_method=self._protocol.sync_read_register,
+            set_method=self._protocol.sync_write_register,
+        )
+        self._b5dc_device_sensors = B5dcDeviceSensors(self._logger, self._b5dc_interface)
+        self._b5dc_device_attn_conf = B5dcDeviceConfigureAttenuation(
+            self._logger, self._b5dc_interface
+        )
+        self._b5dc_device_freq_conf = B5dcDeviceConfigureFrequency(
+            self._logger, self._b5dc_interface
+        )
+
+    def is_connection_established(self) -> bool:
+        """Return if connection is established."""
+        return self._con_established.is_set()
+
+    # ================================
+    #  Sensor synchronisation methods
+    # ================================
 
     async def _update_sensor_with_lock(self, register_name: str) -> None:
         """Acquire the sensor map lock and request b5dc device sensor update."""
-        async with self._sensor_update_lock:
+        with self._sensor_update_lock:
             await self._b5dc_device_sensors.update_sensor(register_name)
 
-    # Update a single sensor value, and the component state from outside the event loop
     def sync_register_outside_event_loop(self, register_name: str) -> None:
         """Update singular B5dc device sensor and sync component state."""
-        if self._con_established.is_set():
+        if self.is_connection_established():
             try:
                 asyncio.run(self._update_sensor_with_lock(register_name))
+                self._update_communication_state(CommunicationStatus.ESTABLISHED)
             except KeyError:
-                self._logger.error(f"Error on request to update unknown register: {register_name}")
-                return None
-            except RuntimeError as ex:
                 self._logger.error(
-                    f"Error while requesting update to register {register_name}: {ex}"
+                    f"Error on request to update " f"unknown register: {register_name}"
                 )
                 return None
+            except B5dcProtocolTimeout:
+                self._logger.error(
+                    f"Protocol exception raised on request to update "
+                    f"sensor: {self._reg_to_sensor_map[register_name]}"
+                )
+                # TODO: In future we want to set the attribute quality to indicate that
+                # the value returned is unreliable
+                return None
 
             self._update_component_state(
                 **{
@@ -178,49 +218,208 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 }
             )
         else:
-            self._logger.warning(
-                "Connection not yet established or component state \
-                not yet synchronized to b5dc device"
-            )
+            self._logger.warning("Connection not yet established or lost")
         return None
-
-    # Update a single sensor value, and the component state from inside the event loop
-    async def _sync_register_within_event_loop(self, register_name: str) -> None:
-        """Update singular B5dc device sensor and sync component state."""
-        if self._protocol.connection_established:
-            try:
-                await self._update_sensor_with_lock(register_name)
-            except KeyError:
-                self._logger.error(f"Failure on request to update register value: {register_name}")
-
-            self._update_component_state(
-                **{
-                    register_name: getattr(
-                        self._b5dc_device_sensors,
-                        self._reg_to_sensor_map[register_name],
-                    )
-                }
-            )
-        else:
-            self._logger.warning("Connection not yet established")
 
     # Polling loop task to be added to event loop in thread
     async def _periodically_poll_sensor_values(self) -> None:
         """Run indefinite loop to periodically update all sensors values."""
         while True:
-            if self._con_established.is_set():
+            if self.is_connection_established():
                 await self._update_all_registers()
             await asyncio.sleep(self._polling_period)
 
     async def _update_all_registers(self) -> None:
         """Update all B5dc device sensors and sync component state."""
-        for register in self._reg_to_sensor_map:
-            await self._sync_register_within_event_loop(register)
+        for register, sensor in self._reg_to_sensor_map.items():
+            attempt = 0
+            while attempt < MAX_RETRY_COUNT:
+                try:
+                    await self._sync_register_within_event_loop(register)
+                    break
+                except B5dcProtocolTimeout:
+                    attempt += 1
+                    self._logger.warning(
+                        f"Timeout updating sensor {sensor}. Retry attempt {attempt}"
+                    )
+                    if attempt >= MAX_RETRY_COUNT:
+                        self._logger.warning(
+                            f"Exceeded maximum retries for sensor update req: {sensor}"
+                        )
+                        break
+            if attempt >= MAX_RETRY_COUNT:
+                break
+
+    async def _sync_register_within_event_loop(self, register_name: str) -> None:
+        """Update singular B5dc device sensor and sync component state."""
+        if self.is_connection_established():
+            try:
+                await self._update_sensor_with_lock(register_name)
+                self._update_communication_state(CommunicationStatus.ESTABLISHED)
+            except KeyError:
+                self._logger.error(
+                    f"Failure on request to update register " f"value: {register_name}"
+                )
+            except B5dcProtocolTimeout:
+                self._logger.error(
+                    f"Protocol exception raised on request to update "
+                    f"sensor: {self._reg_to_sensor_map[register_name]}"
+                )
+                # TODO: In future we want to set the attribute quality to
+                # indicate that the value returned is unreliable
+                raise
+
+            self._update_component_state(
+                **{
+                    register_name: getattr(
+                        self._b5dc_device_sensors,
+                        self._reg_to_sensor_map[register_name],
+                    )
+                }
+            )
+
+    # ==========================
+    #  Command handling methods
+    # ==========================
+
+    def set_attenuation(
+        self,
+        attenuation_db: int,
+        attn_reg_name: str,
+        task_callback: Optional[Callable] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """Set the attenuation on the band 5 down converter."""
+        status, response = self.submit_task(
+            self._set_attenuation,
+            args=[attenuation_db, attn_reg_name],
+            task_callback=task_callback,
+            is_cmd_allowed=self.is_connection_established,
+        )
+        return status, response
+
+    def _set_attenuation(
+        self,
+        attenuation_db: int,
+        attn_reg_name: str,
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
+    ) -> None:
+        """Set the attenuation on the band 5 down converter."""
+        self._logger.debug(
+            f"Called SetAttenuation with args (attenuation_db={attenuation_db}, "
+            f"attn_reg_name={attn_reg_name})"
+        )
+
+        if task_abort_event and task_abort_event.is_set():
+            task_callback(
+                status=TaskStatus.ABORTED,
+            )
+            return
+
+        if task_callback:
+            task_callback(
+                status=TaskStatus.IN_PROGRESS,
+                progress=f"Called SetAttenuation with args "
+                f"(attenuation_db={attenuation_db}, attn_reg_name={attn_reg_name})",
+            )
+
+        try:
+            asyncio.run(self._b5dc_device_attn_conf.set_attenuation(attenuation_db, attn_reg_name))
+        except B5dcDeviceAttenuationException as ex:
+            self._logger.error(
+                f"An error occured on setting the B5dc attenuation " f"on {attn_reg_name}: {ex}"
+            )
+            if task_callback:
+                task_callback(
+                    status=TaskStatus.FAILED,
+                    result=f"An error occured on setting the B5dc attenuation "
+                    f"on {attn_reg_name}: {ex}",
+                )
+            return
+
+        if task_callback:
+            task_callback(
+                status=TaskStatus.COMPLETED,
+                result=f"SetAttenuation({attenuation_db}, {attn_reg_name}) completed",
+            )
+
+    def set_frequency(
+        self,
+        frequency: int,
+        task_callback: Optional[Callable] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """Set the frequency on the band 5 down converter."""
+        try:
+            freq_enum = B5dcFrequency(frequency)
+        except ValueError as ex:
+            self._logger.error(f"Invalid frequency value supplied: {ex}")
+            return (
+                TaskStatus.REJECTED,
+                f"Invalid frequency value supplied: {frequency}. Expected "
+                f"B5dcFrequency enum value (ie: B5dcFrequency.F_11_1_GHZ(1), "
+                f"B5dcFrequency.F_13_2_GHZ(2) or B5dcFrequency.F_13_86_GHZ(3))",
+            )
+
+        status, response = self.submit_task(
+            self._set_frequency,
+            args=[freq_enum],
+            task_callback=task_callback,
+            is_cmd_allowed=self.is_connection_established,
+        )
+        return status, response
+
+    def _set_frequency(
+        self,
+        frequency: int,
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
+    ) -> None:
+        """Set the frequency on the band 5 down converter."""
+        self._logger.debug(f"Called SetFrequency with arg (frequency={frequency})")
+
+        if task_abort_event and task_abort_event.is_set():
+            task_callback(
+                status=TaskStatus.ABORTED,
+            )
+            return
+
+        if task_callback:
+            task_callback(
+                status=TaskStatus.IN_PROGRESS,
+                progress=f"Called SetFrequency with arg (frequency={frequency})",
+            )
+
+        try:
+            asyncio.run(self._b5dc_device_freq_conf.set_frequency(frequency))
+        except B5dcDeviceFrequencyException as ex:
+            self._logger.error(f"An error occured on setting the B5dc frequency: {ex}")
+            if task_callback:
+                task_callback(
+                    status=TaskStatus.FAILED,
+                    result=f"An error occured on setting the B5dc frequency: {ex}",
+                )
+            return
+
+        if task_callback:
+            task_callback(
+                status=TaskStatus.COMPLETED,
+                result=f"SetFrequency({frequency}) completed",
+            )
 
     def _update_component_state(self, **kwargs: Any) -> None:
         """Log and update new component state."""
         self._logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(**kwargs)
+
+    def start_communicating(self) -> None:
+        """Start the communication with the B5DC device."""
+        self._logger.debug("Starting communication with B5DC device")
+        self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
+        # Start the server connection event loop in a separate thread
+        self.loop_thread = Thread(
+            target=self._start_connection_event_loop, daemon=True, name="Asyncio loop thread"
+        )
+        self.loop_thread.start()
 
     async def _update_build_state(self) -> None:
         if self._b5dc_pca is not None and self._b5dc_fw is not None:
@@ -254,7 +453,3 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         b5dc_build_state_json = json.dumps(dataclasses.asdict(b5dc_build_state), indent=4)
         self._logger.debug("Build state updated: [%s]", b5dc_build_state_json)
         self._update_component_state(buildstate=b5dc_build_state_json)
-
-    def is_connection_established(self) -> bool:
-        """Return if connection is established."""
-        return self._con_established.is_set()

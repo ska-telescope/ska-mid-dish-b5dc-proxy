@@ -54,6 +54,7 @@ def b5dc_cm_setup() -> Any:
         b5dc_fw_mock.return_value.b5dc_file_model_name = B5DC_MDL_NAME_TEST
 
         b5dc_cm = B5dcDeviceComponentManager(B5DC_DEVICE_IP, 10001, Mock(), Mock())
+        b5dc_cm.start_communicating()
 
         max_try = 5
         for iterations in range(max_try):
@@ -89,6 +90,7 @@ def b5dc_cm_with_comms_failed() -> Any:
         b5dc_fw_mock.return_value = None
 
         b5dc_cm = B5dcDeviceComponentManager(B5DC_DEVICE_IP, 10001, Mock(), Mock())
+        b5dc_cm.start_communicating()
 
         max_try = 5
         for iterations in range(max_try):
@@ -100,3 +102,13 @@ def b5dc_cm_with_comms_failed() -> Any:
         assert iterations < max_try - 1, "Connection not established"
 
         yield b5dc_cm, [update_sensor_mock, b5dc_sensor_mock]
+
+
+@pytest.fixture(scope="function")
+def callbacks() -> dict:
+    """Return a dictionary of callbacks."""
+    return {
+        "comm_state_cb": Mock(),
+        "comp_state_cb": Mock(),
+        "task_cb": Mock(),
+    }
