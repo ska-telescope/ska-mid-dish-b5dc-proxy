@@ -2,12 +2,12 @@
 name = "ska-mid-dish-b5dc-proxy"
 version = "0.0.1"
 description = "Tango proxy to the Band 5 down-converter"
-authors = ["Yashren Reddi <yreddi@sarao.ac.za>"]
+authors = ["Team Karoo"]
 license= "BSD-3-Clause"
 readme = "README.md"
 
 [tool.poetry.scripts]
-B5DCManager = 'ska_mid_dish_b5dc_proxy.b5dc_proxy:main'
+B5dcProxy = 'ska_mid_dish_b5dc_proxy.b5dc_proxy:main'
 
 [[tool.poetry.source]]
 name = 'skao'
@@ -54,8 +54,10 @@ sphinxcontrib-plantuml = "^0.30"
 
 [tool.pytest.ini_options]
 addopts = "-v"
+testpaths = "tests"
 markers = [
     "unit",
+    "acceptance"
 ]
 
 [tool.flake8]
