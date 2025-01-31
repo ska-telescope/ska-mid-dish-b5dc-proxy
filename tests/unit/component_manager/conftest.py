@@ -90,6 +90,7 @@ def b5dc_cm_with_comms_failed() -> Any:
         b5dc_fw_mock.return_value = None
 
         b5dc_cm = B5dcDeviceComponentManager(B5DC_DEVICE_IP, 10001, Mock(), Mock())
+        b5dc_cm.start_communicating()
 
         max_try = 5
         for iterations in range(max_try):
