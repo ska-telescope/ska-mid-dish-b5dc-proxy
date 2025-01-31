@@ -5,8 +5,10 @@ import sys
 sys.path.insert(0, os.path.abspath("../../src"))
 
 project = "ska-mid-dish-b5dc-proxy"
-copyright = "2024, SKAO"
-author = "Yashren Reddi <yreddi@sarao.ac.za>"
+copyright = "2025, KAROO Team"
+author = "KAROO Team"
+
+# The full version, including alpha/beta/rc tags
 release = "0.0.1"
 
 extensions = [
