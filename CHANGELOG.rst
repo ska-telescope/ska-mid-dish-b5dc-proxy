@@ -4,6 +4,9 @@ Change Log
 
 ## unreleased
 *************
+
+Version 0.0.1
+*************
 - Helm chart created to enable B5dc Proxy deployment
 - Added buildState attribute
 - Created B5dc Proxy tango device with B5DC sensor attributes
