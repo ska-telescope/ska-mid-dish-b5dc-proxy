@@ -15,6 +15,7 @@ def test_attr_change_events_configured(b5dc_manager_proxy: DeviceProxy):
             b5dc_manager_proxy.subscribe_event(attr, EventType.CHANGE_EVENT, utils.EventCallback())
         except DevFailed as err:
             assert err.args[0].reason == "API_AttributePollingNotStarted"
+            print(f"Change event not configured for attribute: {attr}")
             change_events_configured_for_all_attrs = False
 
     assert change_events_configured_for_all_attrs
@@ -33,6 +34,7 @@ def test_attr_archive_events_configured(b5dc_manager_proxy: DeviceProxy):
             )
         except DevFailed as err:
             assert err.args[0].reason == "API_AttributePollingNotStarted"
+            print(f"Archive event not configured for attribute: {attr}")
             archive_events_configured_for_all_attrs = False
 
     assert archive_events_configured_for_all_attrs
