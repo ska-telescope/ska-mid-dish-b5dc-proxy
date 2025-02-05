@@ -3,6 +3,8 @@
 import pytest
 from tango import DevFailed, DeviceProxy, EventType, utils
 
+attrs_without_events_configured = ["loggingLevel", "loggingTargets", "versionId"]
+
 
 @pytest.mark.acceptance
 def test_attr_change_events_configured(b5dc_manager_proxy: DeviceProxy):
@@ -11,12 +13,15 @@ def test_attr_change_events_configured(b5dc_manager_proxy: DeviceProxy):
 
     change_events_configured_for_all_attrs = True
     for attr in b5dc_manager_attrs:
-        try:
-            b5dc_manager_proxy.subscribe_event(attr, EventType.CHANGE_EVENT, utils.EventCallback())
-        except DevFailed as err:
-            assert err.args[0].reason == "API_AttributePollingNotStarted"
-            print(f"Change event not configured for attribute: {attr}")
-            change_events_configured_for_all_attrs = False
+        if attr not in attrs_without_events_configured:
+            try:
+                b5dc_manager_proxy.subscribe_event(
+                    attr, EventType.CHANGE_EVENT, utils.EventCallback()
+                )
+            except DevFailed as err:
+                assert err.args[0].reason == "API_AttributePollingNotStarted"
+                print(f"Change event not configured for attribute: {attr}")
+                change_events_configured_for_all_attrs = False
 
     assert change_events_configured_for_all_attrs
 
@@ -28,13 +33,14 @@ def test_attr_archive_events_configured(b5dc_manager_proxy: DeviceProxy):
 
     archive_events_configured_for_all_attrs = True
     for attr in b5dc_manager_attrs:
-        try:
-            b5dc_manager_proxy.subscribe_event(
-                attr, EventType.ARCHIVE_EVENT, utils.EventCallback()
-            )
-        except DevFailed as err:
-            assert err.args[0].reason == "API_AttributePollingNotStarted"
-            print(f"Archive event not configured for attribute: {attr}")
-            archive_events_configured_for_all_attrs = False
+        if attr not in attrs_without_events_configured:
+            try:
+                b5dc_manager_proxy.subscribe_event(
+                    attr, EventType.ARCHIVE_EVENT, utils.EventCallback()
+                )
+            except DevFailed as err:
+                assert err.args[0].reason == "API_AttributePollingNotStarted"
+                print(f"Archive event not configured for attribute: {attr}")
+                archive_events_configured_for_all_attrs = False
 
     assert archive_events_configured_for_all_attrs
