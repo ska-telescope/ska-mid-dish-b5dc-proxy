@@ -59,6 +59,9 @@ class B5dcProxy(SKABaseDevice):
                 self._device.set_change_event(attr, True, False)
                 self._device.set_archive_event(attr, True, False)
 
+            self._device.set_change_event("connectionState", True, False)
+            self._device.set_archive_event("connectionState", True, False)
+
             (result_code, message) = super().do()  # type: ignore
             self._device.component_manager.start_communicating()
             return ResultCode(result_code), message
