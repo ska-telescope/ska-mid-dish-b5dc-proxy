@@ -4,6 +4,7 @@ Change Log
 
 ## unreleased
 *************
+- Upgraded ska-mid-dish-dcp-lib chart to v0.0.5
 
 Version 0.0.1
 *************
