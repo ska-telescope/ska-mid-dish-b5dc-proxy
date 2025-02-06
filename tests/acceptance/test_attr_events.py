@@ -19,7 +19,7 @@ polled_attributes = [
 # Omit attributes inherited from the base device when testing event configuration
 attrs_without_events_configured = ["loggingLevel", "loggingTargets", "versionId"]
 
-PUSH_EVENT_TIMEOUT = 30
+RECEIVE_EVENT_TIMEOUT = 30
 
 
 @pytest.mark.acceptance
@@ -80,6 +80,6 @@ def test_events_received(
     try:
         subscription_id = b5dc_manager_proxy.subscribe_event(sensor_attr, evt_type, event_store)
         event_store.clear_queue()
-        event_store.wait_for_n_events(event_count=1, timeout=PUSH_EVENT_TIMEOUT)
+        event_store.wait_for_n_events(event_count=1, timeout=RECEIVE_EVENT_TIMEOUT)
     finally:
         b5dc_manager_proxy.unsubscribe_event(subscription_id)
