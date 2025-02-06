@@ -43,7 +43,6 @@ class B5dcProxy(SKABaseDevice):
             """
             self._device._component_state_attr_map = {
                 "buildstate": "buildState",
-                "connectionstate": "connectionState",
                 "spi_rfcm_frequency": "rfcmFrequency",
                 "spi_rfcm_pll_lock": "rfcmPllLock",
                 "spi_rfcm_h_attenuation": "rfcmHAttenuation",
@@ -60,6 +59,9 @@ class B5dcProxy(SKABaseDevice):
             for attr in self._device._component_state_attr_map.values():
                 self._device.set_change_event(attr, True, False)
                 self._device.set_archive_event(attr, True, False)
+
+            self._device.set_change_event("connectionState", True, False)
+            self._device.set_archive_event("connectionState", True, False)
 
             (result_code, message) = super().do()  # type: ignore
             self._device.component_manager.start_communicating()

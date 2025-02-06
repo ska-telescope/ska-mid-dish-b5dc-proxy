@@ -3,6 +3,7 @@
 import pytest
 from tango import DevFailed, DeviceProxy, EventType, utils
 
+# Omit attributes inherited from the base device when testing event configuration
 attrs_without_events_configured = ["loggingLevel", "loggingTargets", "versionId"]
 
 
