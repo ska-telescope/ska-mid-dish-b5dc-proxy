@@ -46,6 +46,31 @@ class EventStore:
         except queue.Empty:
             return items
 
+    def wait_for_n_events(self, event_count: int, timeout: int = 3):
+        """Wait for N number of events.
+
+        Wait `timeout` seconds for each fetch.
+
+        :param event_count: The number of events to wait for
+        :type command_id: int
+        :param timeout: the get timeout, defaults to 3
+        :type timeout: int, optional
+        :raises RuntimeError: If none are found
+        :return: The result of the long running command
+        :rtype: str
+        """
+        events = []
+        try:
+            while len(events) != event_count:
+                event = self._queue.get(timeout=timeout)
+                events.append(event)
+            return events
+        except queue.Empty as err:
+            raise RuntimeError(
+                f"Did not get {event_count} events, ",
+                f"got {len(events)} events",
+            ) from err
+
     def wait_for_progress_update(self, progress_message: str, timeout: int = 5) -> List[Any]:
         """Wait for a long running command progress update.
 
