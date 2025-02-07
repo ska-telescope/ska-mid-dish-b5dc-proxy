@@ -6,6 +6,7 @@ import asyncio
 import dataclasses
 import json
 import logging
+from asyncio import AbstractEventLoop, BaseProtocol, DatagramTransport
 from threading import Event, Lock, Thread
 from typing import Any, Callable, Optional, Tuple
 
@@ -60,9 +61,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._polling_period = b5dc_sensor_update_period
         self._server_addr = (b5dc_server_ip, b5dc_server_port)
 
-        self.loop = None
-        self._transport = None
-        self._protocol = None
+        self.loop: Optional[AbstractEventLoop] = None
+        self._transport: Optional[DatagramTransport] = None
+        self._protocol: Optional[BaseProtocol] = None
         self._b5dc_iic: B5dcIicDevice = None
         self._b5dc_pca: B5dcPhysicalConfiguration = None
         self._b5dc_fw: B5dcFpgaFirmware = None
@@ -125,6 +126,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     async def _establish_server_connection(self) -> None:
         """Establish and maintain server connection within event loop."""
         while True:
+            assert self.loop is not None
             server_connection_lost = self.loop.create_future()
             self._transport, self._protocol = await self.loop.create_datagram_endpoint(
                 lambda: B5dcProtocol(server_connection_lost, self._logger, self._server_addr),
@@ -161,6 +163,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     def _update_b5dc_interface(self) -> None:
         """Create instances of B5dc freq and atten config and device sensor classes."""
+        assert self._protocol is not None, "Protocol is not initialized"
+        assert isinstance(self._protocol, B5dcProtocol), "Protocol has an unexpected type"
         self._b5dc_property_parser = B5dcPropertyParser(self._logger)
         self._b5dc_interface = B5dcInterface(
             self._logger,
@@ -311,7 +315,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         )
 
         if task_abort_event and task_abort_event.is_set():
-            task_callback(
+            task_callback(  # type: ignore
                 status=TaskStatus.ABORTED,
             )
             return
@@ -378,7 +382,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._logger.debug(f"Called SetFrequency with arg (frequency={frequency})")
 
         if task_abort_event and task_abort_event.is_set():
-            task_callback(
+            task_callback(  # type: ignore
                 status=TaskStatus.ABORTED,
             )
             return
