@@ -45,7 +45,7 @@ def test_SetHPolAttenuation_with_valid_input(
     )
     [[_], [command_id]] = b5dc_manager_proxy.SetHPolAttenuation(generated_h_attenuation)
     progress_event_store.wait_for_progress_update(
-        f"Called SetAttenuation with args (attenuation_db={generated_h_attenuation},"
+        f"Called SetAttenuation with args (attenuation_db={generated_h_attenuation}, "
         f"attn_reg_name=spi_rfcm_h_attenuation"
     )
     result_event_store.wait_for_command_id(command_id, 5)
