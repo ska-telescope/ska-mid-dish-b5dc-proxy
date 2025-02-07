@@ -4,6 +4,20 @@
 import pytest
 import tango
 
+from tests.utils import EventStore
+
+
+@pytest.fixture(scope="function")
+def event_store():
+    """Fixture for storing events."""
+    return EventStore()
+
+
+@pytest.fixture(scope="function")
+def event_store_class():
+    """Fixture for storing events."""
+    return EventStore
+
 
 @pytest.fixture
 def b5dc_manager_device_fqdn() -> str:
