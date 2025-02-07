@@ -15,9 +15,6 @@ from tests.unit.component_manager.test_b5dc_commands import (
     ATTENUATION_DB_OUTSIDE_RANGE,
 )
 
-# from conftest import b5dc_manager_proxy
-
-
 frequency_mapping = {
     B5dcFrequency.F_11_1_GHZ: 11.1,
     B5dcFrequency.F_13_2_GHZ: 13.2,
@@ -48,7 +45,7 @@ def test_SetHPolAttenuation_with_valid_input(
         f"Called SetAttenuation with args (attenuation_db={generated_h_attenuation}, "
         f"attn_reg_name=spi_rfcm_h_attenuation"
     )
-    result_event_store.wait_for_command_id(command_id, 5)
+    result_event_store.wait_for_command_id(command_id, timeout=5)
     expected_h_attenuation = b5dc_manager_proxy.read_attribute("rfcmHAttenuation").value
     result_event_store.clear_queue()
     assert generated_h_attenuation == expected_h_attenuation
@@ -77,7 +74,7 @@ def test_SetVPolAttenuation_with_valid_input(
         f"Called SetAttenuation with args (attenuation_db={generated_v_attenuation}, "
         f"attn_reg_name=spi_rfcm_v_attenuation"
     )
-    result_event_store.wait_for_command_id(command_id, 5)
+    result_event_store.wait_for_command_id(command_id, timeout=5)
     expected_v_attentuation = b5dc_manager_proxy.read_attribute("rfcmVAttenuation").value
     result_event_store.clear_queue()
     assert generated_v_attenuation == expected_v_attentuation
@@ -113,7 +110,7 @@ def test_SetFrequency_with_valid_input(
     progress_event_store.wait_for_progress_update(
         f"Called SetFrequency with arg (frequency={set_frequency.value})"
     )
-    result_event_store.wait_for_command_id(command_id, 5)
+    result_event_store.wait_for_command_id(command_id, timeout=5)
     updated_frequency = b5dc_manager_proxy.read_attribute("rfcmFrequency").value
     result_event_store.clear_queue()
     assert updated_frequency == expected_frequency
@@ -124,7 +121,6 @@ def test_SetFrequency_with_valid_input(
 @pytest.mark.parametrize(
     "invalid_input_frequency",
     [
-        ATTENUATION_DB_OUTSIDE_RANGE,
         5,
         6,
         7,
@@ -142,3 +138,57 @@ def test_SetFrequency_with_invalid_input(
         f"B5dcFrequency.F_13_2_GHZ(2) or B5dcFrequency.F_13_86_GHZ(3))"
     )
     assert result_code == ResultCode.REJECTED
+
+
+@pytest.mark.acceptance
+@pytest.mark.forked
+def test_SetHPolAttenuation_with_invalid_input(
+    b5dc_manager_proxy: DeviceProxy, event_store_class: Any
+):
+    """Tests behavior when setting the horizontal attenuation with invalid values."""
+    progress_event_store = event_store_class()
+    b5dc_manager_proxy.subscribe_event(
+        "longrunningcommandprogress", tango.EventType.CHANGE_EVENT, progress_event_store
+    )
+
+    result_event_store = event_store_class()
+    b5dc_manager_proxy.subscribe_event(
+        "longrunningcommandresult", tango.EventType.CHANGE_EVENT, result_event_store
+    )
+    [[_], [command_id]] = b5dc_manager_proxy.SetHPolAttenuation(ATTENUATION_DB_OUTSIDE_RANGE)
+    progress_event_store.wait_for_progress_update(
+        f"Called SetAttenuation with args (attenuation_db={ATTENUATION_DB_OUTSIDE_RANGE}, "
+        f"attn_reg_name=spi_rfcm_h_attenuation"
+    )
+    expected_result = (
+        '"An error occured on setting the B5dc attenuation on '
+        + 'spi_rfcm_h_attenuation: Attenuation must be >= 0 and less than (32.0)"'
+    )
+    result_event_store.wait_for_command_result(command_id, expected_result, timeout=5)
+
+
+@pytest.mark.acceptance
+@pytest.mark.forked
+def test_SetVPolAttenuation_with_invalid_input(
+    b5dc_manager_proxy: DeviceProxy, event_store_class: Any
+):
+    """Tests behavior when setting the vertical attenuation with invalid values."""
+    progress_event_store = event_store_class()
+    b5dc_manager_proxy.subscribe_event(
+        "longrunningcommandprogress", tango.EventType.CHANGE_EVENT, progress_event_store
+    )
+
+    result_event_store = event_store_class()
+    b5dc_manager_proxy.subscribe_event(
+        "longrunningcommandresult", tango.EventType.CHANGE_EVENT, result_event_store
+    )
+    [[_], [command_id]] = b5dc_manager_proxy.SetVPolAttenuation(ATTENUATION_DB_OUTSIDE_RANGE)
+    progress_event_store.wait_for_progress_update(
+        f"Called SetAttenuation with args (attenuation_db={ATTENUATION_DB_OUTSIDE_RANGE}, "
+        f"attn_reg_name=spi_rfcm_v_attenuation"
+    )
+    expected_result = (
+        '"An error occured on setting the B5dc attenuation on '
+        + 'spi_rfcm_v_attenuation: Attenuation must be >= 0 and less than (32.0)"'
+    )
+    result_event_store.wait_for_command_result(command_id, expected_result, timeout=5)
