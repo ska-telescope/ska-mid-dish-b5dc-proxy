@@ -40,7 +40,7 @@ include:
 
   # Create Gitlab CI badges from CI metrics
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
+    file: 'gitlab-ci/includes/post_step.yml'
 
   # Create a release
   - project: 'ska-telescope/templates-repository'
