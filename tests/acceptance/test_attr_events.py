@@ -1,10 +1,25 @@
-"""Test that attribute and change events are configured for all B5dc Proxy attributes."""
+"""Test attribute and change events are configured and received."""
+
+from typing import Callable
 
 import pytest
 from tango import DevFailed, DeviceProxy, EventType, utils
 
+polled_attributes = [
+    "rfcmPllLock",
+    "clkPhotodiodeCurrent",
+    "hPolRfPowerIn",
+    "vPolRfPowerIn",
+    "hPolRfPowerOut",
+    "vPolRfPowerOut",
+    "rfTemperature",
+    "rfcmPsuPcbTemperature",
+]
+
 # Omit attributes inherited from the base device when testing event configuration
 attrs_without_events_configured = ["loggingLevel", "loggingTargets", "versionId"]
+
+RECEIVE_EVENT_TIMEOUT = 30
 
 
 @pytest.mark.acceptance
@@ -45,3 +60,26 @@ def test_attr_archive_events_configured(b5dc_manager_proxy: DeviceProxy):
                 archive_events_configured_for_all_attrs = False
 
     assert archive_events_configured_for_all_attrs
+
+
+@pytest.mark.parametrize(
+    "sensor_attr",
+    polled_attributes,
+)
+@pytest.mark.parametrize(
+    "evt_type",
+    [EventType.CHANGE_EVENT, EventType.ARCHIVE_EVENT],
+)
+@pytest.mark.acceptance
+def test_events_received(
+    b5dc_manager_proxy: DeviceProxy, event_store: Callable, sensor_attr: str, evt_type: EventType
+):
+    """Test polling mechanism pushes change and archive events."""
+    event_store = event_store()
+
+    try:
+        subscription_id = b5dc_manager_proxy.subscribe_event(sensor_attr, evt_type, event_store)
+        event_store.clear_queue()
+        event_store.wait_for_n_events(event_count=1, timeout=RECEIVE_EVENT_TIMEOUT)
+    finally:
+        b5dc_manager_proxy.unsubscribe_event(subscription_id)
