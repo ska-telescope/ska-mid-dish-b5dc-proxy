@@ -72,14 +72,14 @@ def test_attr_archive_events_configured(b5dc_manager_proxy: DeviceProxy):
 )
 @pytest.mark.acceptance
 def test_events_received(
-    b5dc_manager_proxy: DeviceProxy, event_store: Callable, sensor_attr: str, evt_type: EventType
+    b5dc_manager_proxy: DeviceProxy, event_store_class: Callable, sensor_attr: str, evt_type: EventType
 ):
     """Test polling mechanism pushes change and archive events."""
-    event_store = event_store()
+    event_store_class = event_store_class()
 
     try:
-        subscription_id = b5dc_manager_proxy.subscribe_event(sensor_attr, evt_type, event_store)
-        event_store.clear_queue()
-        event_store.wait_for_n_events(event_count=1, timeout=RECEIVE_EVENT_TIMEOUT)
+        subscription_id = b5dc_manager_proxy.subscribe_event(sensor_attr, evt_type, event_store_class)
+        event_store_class.clear_queue()
+        event_store_class.wait_for_n_events(event_count=1, timeout=RECEIVE_EVENT_TIMEOUT)
     finally:
         b5dc_manager_proxy.unsubscribe_event(subscription_id)

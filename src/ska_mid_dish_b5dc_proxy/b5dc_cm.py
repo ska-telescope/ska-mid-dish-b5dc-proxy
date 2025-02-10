@@ -126,7 +126,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     async def _establish_server_connection(self) -> None:
         """Establish and maintain server connection within event loop."""
         while True:
-            assert self.loop is not None  # asserts the loop is not None
+            assert self.loop is not None
             server_connection_lost = self.loop.create_future()
             self._transport, self._protocol = await self.loop.create_datagram_endpoint(
                 lambda: B5dcProtocol(server_connection_lost, self._logger, self._server_addr),
@@ -163,7 +163,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
     def _update_b5dc_interface(self) -> None:
         """Create instances of B5dc freq and atten config and device sensor classes."""
-        assert self._protocol is not None  # Protocol is not initialized
+        assert self._protocol is not None
         self._b5dc_property_parser = B5dcPropertyParser(self._logger)
         self._b5dc_interface = B5dcInterface(
             self._logger,
