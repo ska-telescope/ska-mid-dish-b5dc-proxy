@@ -97,7 +97,6 @@ def test_SetFrequency_with_valid_input(
     )
     result_event_store.wait_for_command_id(command_id, timeout=5)
     updated_frequency = b5dc_manager_proxy.read_attribute("rfcmFrequency").value
-    result_event_store.clear_queue()
     assert updated_frequency == expected_frequency
 
 
@@ -130,8 +129,8 @@ def test_SetFrequency_with_invalid_input(
 @pytest.mark.parametrize(
     "type_of_attenuation, attenuation_register",
     [
-        ("rfcmHAttenuation", "spi_rfcm_h_attenuation"),
         ("rfcmVAttenuation", "spi_rfcm_v_attenuation"),
+        ("rfcmHAttenuation", "spi_rfcm_h_attenuation"),
     ],
 )
 def test_SetAttenuation_with_invalid_input(
@@ -169,6 +168,6 @@ def test_SetAttenuation_with_invalid_input(
         )
         expected_result = (
             '"An error occured on setting the B5dc attenuation on '
-            + '"spi_rfcm_v_attenuation: Attenuation must be >= 0 and less than (32.0)"'
+            + 'spi_rfcm_v_attenuation: Attenuation must be >= 0 and less than (32.0)"'
         )
         result_event_store.wait_for_command_result(command_id, expected_result, timeout=5)
