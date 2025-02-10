@@ -22,6 +22,6 @@ def b5dc_manager_proxy(b5dc_manager_device_fqdn: str) -> tango.DeviceProxy:
 
 
 @pytest.fixture(scope="function")
-def event_store() -> Callable:
+def event_store_class() -> Callable:
     """Fixture for storing events."""
     return EventStore
