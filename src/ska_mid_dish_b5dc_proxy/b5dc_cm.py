@@ -154,17 +154,14 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
 
             poll_loop = None
 
-            # This loop tries indefinitely to update the buildstate. We break out
-            # either on successfully pulling the buildstate or on a connection
-            # lost event at the protocol level
             while not server_connection_lost.done() and not server_connection_lost.cancelled():
                 try:
                     if not self._build_state_fetched:
                         await self._update_build_state()
                         self._update_communication_state(CommunicationStatus.ESTABLISHED)
 
-                    # Only set comm state to established and schedule the polling
-                    # loop task if the build state fetch succeeded
+                    # Attribute reads, commands and the polling loop are "locked out"
+                    # until the build state has been successfully fetched
                     self._con_established.set()
                     poll_loop = self.loop.create_task(self._periodically_poll_sensor_values())
                     break
