@@ -84,7 +84,7 @@ class B5dcProxy(SKABaseDevice):
             component_state_callback=self._component_state_changed,
         )
 
-    def init_command_objects(self):
+    def init_command_objects(self) -> None:
         """Initialize the command handlers."""
         super().init_command_objects()
 
@@ -104,13 +104,13 @@ class B5dcProxy(SKABaseDevice):
                 ),
             )
 
-    def _communication_state_changed(self, communication_state: CommunicationStatus):
+    def _communication_state_changed(self, communication_state: CommunicationStatus) -> None:
         """Push and archive events on communication state change."""
         self.push_change_event("connectionState", communication_state)
         self.push_archive_event("connectionState", communication_state)
 
     # pylint: disable=unused-argument
-    def _component_state_changed(self, *args: Any, **kwargs: Any):
+    def _component_state_changed(self, *args: Any, **kwargs: Any) -> None:
         """Push and archive events on component state change."""
         for comp_state_name, comp_state_value in kwargs.items():
             attribute_name = self._component_state_attr_map.get(comp_state_name, comp_state_name)

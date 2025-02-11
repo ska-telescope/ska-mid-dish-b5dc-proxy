@@ -23,6 +23,6 @@ def b5dc_proxy() -> Any:
 
 
 @pytest.fixture(scope="function")
-def event_store() -> EventStore:
+def event_store_class() -> EventStore:
     """Fixture for storing events."""
     return EventStore()
