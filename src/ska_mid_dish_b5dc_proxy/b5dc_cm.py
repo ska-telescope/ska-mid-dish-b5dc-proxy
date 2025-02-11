@@ -153,13 +153,10 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             self._update_b5dc_interface()
 
             poll_loop = None
-
             while not server_connection_lost.done() and not server_connection_lost.cancelled():
                 try:
-                    if not self._build_state_fetched:
-                        await self._update_build_state()
-                        self._update_communication_state(CommunicationStatus.ESTABLISHED)
-
+                    await self._initialize_build_state()
+                    self._update_communication_state(CommunicationStatus.ESTABLISHED)
                     # Attribute reads, commands and the polling loop are "locked out"
                     # until the build state has been successfully fetched
                     self._con_established.set()
@@ -214,6 +211,11 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
     def is_connection_established(self) -> bool:
         """Return if connection is established."""
         return self._con_established.is_set()
+
+    async def _initialize_build_state(self) -> None:
+        """Fetch the buildstate on device startup."""
+        if not self._build_state_fetched:
+            await self._update_build_state()
 
     # ================================
     #  Sensor synchronisation methods
