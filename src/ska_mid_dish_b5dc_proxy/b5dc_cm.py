@@ -112,6 +112,19 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             **kwargs,
         )
 
+        self._build_state_fetched = False
+
+    def start_communicating(self) -> None:
+        """Start the communication with the B5DC device."""
+        self._logger.debug("Starting communication with B5DC device")
+        self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
+
+        # Start the server connection event loop in a separate thread
+        self.loop_thread = Thread(
+            target=self._start_connection_event_loop, daemon=True, name="Asyncio loop thread"
+        )
+        self.loop_thread.start()
+
     # =============================
     #  Connection handling methods
     # =============================
@@ -135,22 +148,39 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             # Update B5dc interface objects using newly created
             # transport and protocol
             self._update_b5dc_interface()
-            self._b5dc_iic = B5dcIicDevice(self._protocol)
-            self._b5dc_fw = B5dcFpgaFirmware(self._logger, self._protocol)
-            self._b5dc_pca = B5dcPhysicalConfiguration(self._logger, self._b5dc_iic)
-            await self._update_build_state()
 
-            self._con_established.set()
+            poll_loop = None
 
-            poll_loop = self.loop.create_task(self._periodically_poll_sensor_values())
+            # This loop tries indefinitely to update the buildstate. We break out
+            # either on successfully pulling the buildstate or on a connection
+            # lost event at the protocol level
+            while not server_connection_lost.done() and not server_connection_lost.cancelled():
+                try:
+                    if not self._build_state_fetched:
+                        await self._update_build_state()
+                        self._update_communication_state(CommunicationStatus.ESTABLISHED)
+
+                    # Only set comm state to established and schedule the polling
+                    # loop task if the build state fetch succeeded
+                    self._con_established.set()
+                    poll_loop = self.loop.create_task(self._periodically_poll_sensor_values())
+                    break
+                except B5dcProtocolTimeout as ex:
+                    self._logger.warning(
+                        f"Buildstate update failed due to exception: {ex} Retrying"
+                    )
 
             try:
-                await server_connection_lost
+                if not server_connection_lost.done() and not server_connection_lost.cancelled():
+                    await server_connection_lost
+
                 self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
 
-                poll_loop.cancel()
+                if poll_loop:
+                    poll_loop.cancel()
 
-                self._con_established.clear()
+                if self._con_established.isSet():
+                    self._con_established.clear()
 
                 self._logger.warning("Reestablishing lost B5dc server connection")
             finally:
@@ -175,6 +205,9 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._b5dc_device_freq_conf = B5dcDeviceConfigureFrequency(
             self._logger, self._b5dc_interface
         )
+        self._b5dc_iic = B5dcIicDevice(self._protocol)
+        self._b5dc_fw = B5dcFpgaFirmware(self._logger, self._protocol)
+        self._b5dc_pca = B5dcPhysicalConfiguration(self._logger, self._b5dc_iic)
 
     def is_connection_established(self) -> bool:
         """Return if connection is established."""
@@ -411,16 +444,6 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         self._logger.debug("Updating B5dc component state with [%s]", kwargs)
         super()._update_component_state(**kwargs)
 
-    def start_communicating(self) -> None:
-        """Start the communication with the B5DC device."""
-        self._logger.debug("Starting communication with B5DC device")
-        self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
-        # Start the server connection event loop in a separate thread
-        self.loop_thread = Thread(
-            target=self._start_connection_event_loop, daemon=True, name="Asyncio loop thread"
-        )
-        self.loop_thread.start()
-
     async def _update_build_state(self) -> None:
         if self._b5dc_pca is not None and self._b5dc_fw is not None:
             await self._b5dc_pca.update_pca_info()
@@ -453,3 +476,4 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
         b5dc_build_state_json = json.dumps(dataclasses.asdict(b5dc_build_state), indent=4)
         self._logger.debug("Build state updated: [%s]", b5dc_build_state_json)
         self._update_component_state(buildstate=b5dc_build_state_json)
+        self._build_state_fetched = True
