@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name,possibly-unused-variable,no-value-for-parameter
-
 """General utils for test devices."""
 import queue
 from typing import Any, List

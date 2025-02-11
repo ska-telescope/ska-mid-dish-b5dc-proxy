@@ -153,6 +153,8 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
             self._update_b5dc_interface()
 
             poll_loop = None
+            # Recursively try to update the build state until (1) thre buildstate is
+            # successfully updated or (2) the server connection is lost
             while not server_connection_lost.done() and not server_connection_lost.cancelled():
                 try:
                     await self._initialize_build_state()
@@ -176,7 +178,7 @@ class B5dcDeviceComponentManager(TaskExecutorComponentManager):
                 if poll_loop:
                     poll_loop.cancel()
 
-                if self._con_established.isSet():
+                if self._con_established.is_set():
                     self._con_established.clear()
 
                 self._logger.warning("Reestablishing lost B5dc server connection")
