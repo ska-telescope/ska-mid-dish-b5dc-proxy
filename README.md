@@ -51,14 +51,14 @@ make python-lint
 ## Development
 ### Deploy Band 5 Down-Converter(B5dc) Manager with B5dc simulator
 
-- Deploy b5dcproxy with UDP server from ska-mid-dish-dcp-lib
+- Deploy b5dcmanager with UDP server from ska-mid-dish-dcp-lib
 
 ```bash
-kubectl create namespace b5dc-proxy
+kubectl create namespace b5dc-manager
 ```
 
 ```bash
-$  helm upgrade --install dev charts/ska-mid-dish-b5dc-proxy -n b5dc-proxy \
+$  helm upgrade --install dev charts/ska-mid-dish-b5dc-proxy -n b5dc-manager \
 --set global.minikube=true \
 --set global.operator=true \
 --set global.dishes="{001,002}" \ # number of instances to deploy; if not specified defaults to 001
