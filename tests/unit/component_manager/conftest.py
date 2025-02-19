@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
+from ska_mid_dish_b5dc_manager.b5dc_cm import B5dcDeviceComponentManager
 
 B5DC_DEVICE_IP = "127.0.0.1"
 B5DC_VER_TEST = "B5dc version 123"
@@ -23,18 +23,18 @@ B5DC_MDL_NAME_TEST = "fpga_model_name"
 @pytest.fixture(scope="function")
 def b5dc_cm_setup() -> Any:
     """Create component manager for testing."""
-    with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
+    with patch("ska_mid_dish_b5dc_manager.b5dc_cm.B5dcInterface", AsyncMock()), patch(
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcPropertyParser", Mock()
     ), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceSensors", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcDeviceSensors", Mock()
     ) as b5dc_sensor_mock, patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcProtocol", Mock()
     ), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcIicDevice", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcIicDevice", Mock()
     ), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcFpgaFirmware", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcFpgaFirmware", Mock()
     ) as b5dc_fw_mock, patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPhysicalConfiguration", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcPhysicalConfiguration", Mock()
     ) as b5dc_pca_mock, patch.object(
         B5dcDeviceComponentManager, "_update_sensor_with_lock"
     ) as update_sensor_mock:
@@ -71,18 +71,18 @@ def b5dc_cm_setup() -> Any:
 @pytest.fixture(scope="function")
 def b5dc_cm_with_comms_failed() -> Any:
     """Create component manager for testing where the comms to b5dc failed."""
-    with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
+    with patch("ska_mid_dish_b5dc_manager.b5dc_cm.B5dcInterface", AsyncMock()), patch(
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcPropertyParser", Mock()
     ), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceSensors", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcDeviceSensors", Mock()
     ) as b5dc_sensor_mock, patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcProtocol", Mock()
     ), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcIicDevice", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcIicDevice", Mock()
     ), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcFpgaFirmware", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcFpgaFirmware", Mock()
     ) as b5dc_fw_mock, patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPhysicalConfiguration", Mock()
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcPhysicalConfiguration", Mock()
     ) as b5dc_pca_mock, patch.object(
         B5dcDeviceComponentManager, "_update_sensor_with_lock"
     ) as update_sensor_mock:

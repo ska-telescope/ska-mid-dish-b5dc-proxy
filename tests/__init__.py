@@ -1,1 +1,1 @@
-"""Test package for ska_mid_dish_b5dc_proxy."""
+"""Test package for ska_mid_dish_b5dc_manager."""

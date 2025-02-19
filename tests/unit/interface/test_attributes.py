@@ -22,18 +22,18 @@ attributes = [
 
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_test_attributes_exist(b5dc_proxy: Any) -> None:
+def test_client_test_attributes_exist(b5dc_manager: Any) -> None:
     """Verify b5dc attributes exposed."""
-    attr = b5dc_proxy.get_attribute_list()
+    attr = b5dc_manager.get_attribute_list()
     assert set(attributes).issubset(set(attr))
 
 
 @pytest.mark.parametrize("attr", attributes)
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_receives_archive_event(b5dc_proxy: Any, event_store_class: Any, attr: Any) -> None:
+def test_client_receives_archive_event(b5dc_manager: Any, event_store_class: Any, attr: Any) -> None:
     """Verify archive events are configured."""
-    b5dc_proxy.subscribe_event(
+    b5dc_manager.subscribe_event(
         attr,
         tango.EventType.ARCHIVE_EVENT,
         event_store_class,
@@ -45,9 +45,9 @@ def test_client_receives_archive_event(b5dc_proxy: Any, event_store_class: Any, 
 @pytest.mark.parametrize("attr", attributes)
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_receives_change_event(b5dc_proxy: Any, event_store_class: Any, attr: Any) -> None:
+def test_client_receives_change_event(b5dc_manager: Any, event_store_class: Any, attr: Any) -> None:
     """Verify change events are configured."""
-    b5dc_proxy.subscribe_event(
+    b5dc_manager.subscribe_event(
         attr,
         tango.EventType.CHANGE_EVENT,
         event_store_class,

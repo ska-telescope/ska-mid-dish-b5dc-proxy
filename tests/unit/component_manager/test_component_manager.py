@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
-from ska_mid_dish_b5dc_proxy.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
+from ska_mid_dish_b5dc_manager.b5dc_cm import B5dcDeviceComponentManager
+from ska_mid_dish_b5dc_manager.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
 
 from .conftest import (
     B5DC_BACKPLANE_VER_TEST,
@@ -130,10 +130,10 @@ def test_b5dc_polling_update_frequency() -> None:
     update_period = 2
     wait_duration = 11
 
-    with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
-    ), patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceSensors", Mock()), patch(
-        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()
+    with patch("ska_mid_dish_b5dc_manager.b5dc_cm.B5dcInterface", AsyncMock()), patch(
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcPropertyParser", Mock()
+    ), patch("ska_mid_dish_b5dc_manager.b5dc_cm.B5dcDeviceSensors", Mock()), patch(
+        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcProtocol", Mock()
     ), patch.object(
         B5dcDeviceComponentManager, "_update_sensor_with_lock"
     ) as update_sensor_mock, patch.object(
