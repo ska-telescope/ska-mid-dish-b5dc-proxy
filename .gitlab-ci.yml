@@ -51,5 +51,5 @@ mypy:
   stage: lint
   script:
     - pip install mypy
-    - mypy --ignore-missing-imports --config-file mypy.ini ./src/ska_mid_dish_b5dc_proxy/b5dc_proxy.py
+    - mypy --ignore-missing-imports --config-file mypy.ini ./src/ska_mid_dish_b5dc_manager/b5dc_manager.py
   allow_failure: true
