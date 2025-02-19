@@ -1,7 +1,7 @@
 {{ $localchart := . }}
 
 {{- $lengthdishes := len .Values.global.dishes }}
-{{- $lengthfqdns := len .Values.b5dcproxy.fqdns }}
+{{- $lengthfqdns := len .Values.b5dcmanager.fqdns }}
 
 {{- if ne $lengthfqdns 0 }}
     {{- if ne $lengthdishes $lengthfqdns }}

@@ -1,4 +1,4 @@
-- class: B5dcProxy
+- class: B5dcManager
   meta:
     commands:
     - name: AbortCommands

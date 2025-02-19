@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ska-mid-dish-b5dc-proxy"
+name = "ska-mid-dish-b5dc-manager"
 version = "0.0.1"
 description = "Tango proxy to the Band 5 down-converter"
 authors = ["Team Karoo"]
@@ -7,7 +7,7 @@ license= "BSD-3-Clause"
 readme = "README.md"
 
 [tool.poetry.scripts]
-B5dcProxy = 'ska_mid_dish_b5dc_proxy.b5dc_proxy:main'
+B5dcManager = 'ska_mid_dish_b5dc_manager.b5dc_manager:main'
 
 [[tool.poetry.source]]
 name = 'skao'
@@ -23,6 +23,7 @@ pytango = "9.5.0"
 ska-tango-base = "1.0.0"
 numpy = "1.26.2"
 ska-mid-dish-dcp-lib = "0.0.4"
+jsonschema = "*"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
