@@ -51,9 +51,9 @@ CI_REGISTRY ?= registry.gitlab.com
 
 # Use the previously built image when running in the pipeline
 ifneq ($(CI_JOB_ID),)
-CUSTOM_VALUES = --set b5dcproxy.image.image=$(NAME) \
-	--set b5dcproxy.image.registry=$(CI_REGISTRY)/ska-telescope/$(NAME) \
-	--set b5dcproxy.image.tag=$(OCI_TAG) \
+CUSTOM_VALUES = --set b5dcmanager.image.image=$(NAME) \
+	--set b5dcmanager.image.registry=$(CI_REGISTRY)/ska-telescope/$(NAME) \
+	--set b5dcmanager.image.tag=$(OCI_TAG) \
 	--set ska-mid-dish-dcp-lib.enabled=true  \
 	--set ska-mid-dish-dcp-lib.b5dcSimulator.enabled=true \
 	--set ska-tango-base.enabled=true \
