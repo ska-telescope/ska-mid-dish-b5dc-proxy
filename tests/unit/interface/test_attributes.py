@@ -31,7 +31,9 @@ def test_client_test_attributes_exist(b5dc_manager: Any) -> None:
 @pytest.mark.parametrize("attr", attributes)
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_receives_archive_event(b5dc_manager: Any, event_store_class: Any, attr: Any) -> None:
+def test_client_receives_archive_event(
+    b5dc_manager: Any, event_store_class: Any, attr: Any
+) -> None:
     """Verify archive events are configured."""
     b5dc_manager.subscribe_event(
         attr,
@@ -45,7 +47,9 @@ def test_client_receives_archive_event(b5dc_manager: Any, event_store_class: Any
 @pytest.mark.parametrize("attr", attributes)
 @pytest.mark.unit
 @pytest.mark.forked
-def test_client_receives_change_event(b5dc_manager: Any, event_store_class: Any, attr: Any) -> None:
+def test_client_receives_change_event(
+    b5dc_manager: Any, event_store_class: Any, attr: Any
+) -> None:
     """Verify change events are configured."""
     b5dc_manager.subscribe_event(
         attr,
