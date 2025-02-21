@@ -13,9 +13,7 @@ from tests.utils import EventStore
 @pytest.fixture
 def b5dc_manager() -> Any:
     """Create b5dc manager."""
-    with patch(
-        ("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceComponentManager.start_communicating")
-    ):
+    with patch(("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceComponentManager.start_communicating")):
         tango_context = DeviceTestContext(B5dcManager, process=True)
         tango_context.start()
         device_proxy = tango_context.device
