@@ -14,7 +14,7 @@ from tests.utils import EventStore
 def b5dc_manager() -> Any:
     """Create b5dc manager."""
     with patch(
-        ("ska_mid_dish_b5dc_manager.b5dc_cm.B5dcDeviceComponentManager.start_communicating")
+        ("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceComponentManager.start_communicating")
     ):
         tango_context = DeviceTestContext(B5dcManager, process=True)
         tango_context.start()

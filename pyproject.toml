@@ -7,7 +7,7 @@ license= "BSD-3-Clause"
 readme = "README.md"
 
 [tool.poetry.scripts]
-B5dcManager = 'ska_mid_dish_b5dc_manager.b5dc_manager:main'
+B5dcManager = 'ska_mid_dish_b5dc_proxy.b5dc_manager:main'
 
 [[tool.poetry.source]]
 name = 'skao'

@@ -130,10 +130,10 @@ def test_b5dc_polling_update_frequency() -> None:
     update_period = 2
     wait_duration = 11
 
-    with patch("ska_mid_dish_b5dc_manager.b5dc_cm.B5dcInterface", AsyncMock()), patch(
-        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcPropertyParser", Mock()
-    ), patch("ska_mid_dish_b5dc_manager.b5dc_cm.B5dcDeviceSensors", Mock()), patch(
-        "ska_mid_dish_b5dc_manager.b5dc_cm.B5dcProtocol", Mock()
+    with patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcInterface", AsyncMock()), patch(
+        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcPropertyParser", Mock()
+    ), patch("ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcDeviceSensors", Mock()), patch(
+        "ska_mid_dish_b5dc_proxy.b5dc_cm.B5dcProtocol", Mock()
     ), patch.object(
         B5dcDeviceComponentManager, "_update_sensor_with_lock"
     ) as update_sensor_mock, patch.object(

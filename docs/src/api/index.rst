@@ -1,7 +1,7 @@
-ska_mid_dish_b5dc_manager Package
+ska_mid_dish_b5dc_proxy Package
 ===============================
 
-.. automodule:: ska_mid_dish_b5dc_manager
+.. automodule:: ska_mid_dish_b5dc_proxy
     :members:
     :special-members:
 
