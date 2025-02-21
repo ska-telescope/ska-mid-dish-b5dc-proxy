@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from ska_mid_dish_b5dc_manager.b5dc_cm import B5dcDeviceComponentManager
+from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 
 B5DC_DEVICE_IP = "127.0.0.1"
 B5DC_VER_TEST = "B5dc version 123"

@@ -28,8 +28,8 @@ from ska_mid_dish_dcp_lib.interface.b5dc_interface import B5dcInterface, B5dcPro
 from ska_mid_dish_dcp_lib.protocol.b5dc_protocol import B5dcProtocol, B5dcProtocolTimeout
 from ska_tango_base.executor import TaskExecutorComponentManager
 
-from ska_mid_dish_b5dc_manager.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
-from ska_mid_dish_b5dc_manager.models.data_classes import B5dcBuildStateDataclass
+from ska_mid_dish_b5dc_proxy.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
+from ska_mid_dish_b5dc_proxy.models.data_classes import B5dcBuildStateDataclass
 
 WAIT_BEFORE_CONNECTION_RETRY_SEC = 5
 MAX_RETRY_COUNT = 3

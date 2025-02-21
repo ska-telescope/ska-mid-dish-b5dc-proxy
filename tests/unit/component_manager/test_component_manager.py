@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from ska_mid_dish_b5dc_manager.b5dc_cm import B5dcDeviceComponentManager
-from ska_mid_dish_b5dc_manager.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
+from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
+from ska_mid_dish_b5dc_proxy.models.constants import B5DC_BUILD_STATE_DEVICE_NAME
 
 from .conftest import (
     B5DC_BACKPLANE_VER_TEST,

@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from tango.test_context import DeviceTestContext
 
-from ska_mid_dish_b5dc_manager.b5dc_manager import B5dcManager
+from ska_mid_dish_b5dc_proxy.b5dc_manager import B5dcManager
 from tests.utils import EventStore
 
 

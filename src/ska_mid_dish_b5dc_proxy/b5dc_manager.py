@@ -11,7 +11,7 @@ from ska_tango_base.commands import SubmittedSlowCommand
 from tango import AttrWriteType, is_omni_thread
 from tango.server import attribute, command, device_property, run
 
-from ska_mid_dish_b5dc_manager.b5dc_cm import B5dcDeviceComponentManager
+from ska_mid_dish_b5dc_proxy.b5dc_cm import B5dcDeviceComponentManager
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
