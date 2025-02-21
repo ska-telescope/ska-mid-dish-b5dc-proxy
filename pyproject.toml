@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ska-mid-dish-b5dc-manager"
+name = "ska-mid-dish-b5dc-proxy"
 version = "0.0.1"
 description = "Tango proxy to the Band 5 down-converter"
 authors = ["Team Karoo"]
