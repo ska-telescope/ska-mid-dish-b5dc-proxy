@@ -22,7 +22,7 @@ WORKDIR /build
 COPY pyproject.toml poetry.lock* ./
 
 # Uncomment below to update lock file
-RUN poetry lock --no-update
+# RUN poetry lock --no-update
 
 # Install third-party dependencies from PyPI and CAR
 RUN poetry install --only main --no-root --no-directory
